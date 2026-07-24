@@ -24,7 +24,7 @@ func InitDatabase() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer DB.Close()
+	// defer DB.Close()
 
 	// // Maximum number of open connections to the database.
 	// DB.SetMaxOpenConns(25)

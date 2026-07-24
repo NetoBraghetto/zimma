@@ -12,8 +12,11 @@ func main() {
 	_ = godotenv.Load() // Loads .env file
 
 	bootstrap.InitDatabase()
-
 	router := gin.Default()
+
+	bootstrap.InitCors(router)
+	router.Use(bootstrap.InitRateLimit())
+
 	routes.Api(router)
 	router.Run()
 }

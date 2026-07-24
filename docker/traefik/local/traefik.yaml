@@ -1,0 +1,49 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+log:
+  level: DEBUG
+
+api:
+  dashboard: true
+  insecure: true
+
+entryPoints:
+  web:
+    address: :80
+
+http:
+  middlewares:
+    cors:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        accessControlAllowHeaders:
+          - Origin
+          - Accept
+          - Content-Type
+          - Authorization
+          - X-Requested-With
+          - Tus-Resumable
+          - Upload-Length
+          - Upload-Metadata
+        accessControlAllowOriginList:
+          - 'http://{{ env "APP_DOMAIN" }}'
+          # - 'http://minio.{{ env "APP_DOMAIN" }}:9000'
+          # - 'http://swagger.{{ env "APP_DOMAIN" }}'
+          # - 'https://{{ env "NGROK_DOMAIN" }}'
+        accessControlMaxAge: 300
+        addVaryHeader: true
+        accessControlAllowCredentials: true
+
+providers:
+  docker:
+    exposedByDefault: false # Default is true
+  file:
+    directory: /etc/traefik
+    watch: true

@@ -1,0 +1,117 @@
+services:
+  api:
+    container_name: "${DOCKER_APP}-api"
+    build:
+      context: ./
+      dockerfile: "./docker/api/local/Dockerfile"
+    expose:
+      - "8080"
+    volumes:
+      - "./api:/api"
+    environment:
+      - ENV=development
+    #   - APP_DOMAIN=${APP_DOMAIN}
+    # command:
+    #   - "/usr/local/bin/php"
+    #   - "-d"
+    #   - "variables_order=EGPCS"
+    #   - "/api/artisan"
+    #   - "octane:start"
+    #   - "--server=swoole"
+    #   - "--host=0.0.0.0"
+    #   - "--port=80"
+    #   - "--watch"
+    #   - "--task-workers=6"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.${APP_DOMAIN}`)"
+      - "traefik.http.routers.api.middlewares=cors@file"
+      - "traefik.http.services.api.loadbalancer.server.port=8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # Air requires an interactive TTY session to prevent termination issues
+    tty: true
+    networks:
+      - zimma-network
+  mysql:
+    container_name: "${DOCKER_APP}-mysql"
+    build: "./docker/mysql"
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - "./docker/mysql/data:/var/lib/mysql"
+      - "./docker/mysql/mysql.cnf:/etc/mysql/conf.d/mysql.cnf"
+    networks:
+      - zimma-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 20s
+      retries: 3
+  # mailpit:
+  #   container_name: "${DOCKER_APP}-mailpit"
+  #   image: "axllent/mailpit:latest"
+  #   expose:
+  #     - "1025"
+  #     - "8025"
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.mailpit.rule=Host(`webmail.${APP_DOMAIN}`)"
+  #     - "traefik.http.services.mailpit.loadbalancer.server.port=8025"
+  #   networks:
+  #     - zimma-network
+  # swagger:
+  #   container_name: "${DOCKER_APP}-swagger"
+  #   image: "swaggerapi/swagger-ui:latest"
+  #   expose:
+  #     - "8080"
+  #   environment:
+  #     SWAGGER_JSON: "/tmp/openapi.yaml"
+  #   volumes:
+  #     - "./api/openapi.yaml:/tmp/openapi.yaml"
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.swagger.rule=Host(`swagger.${APP_DOMAIN}`)"
+  #     - "traefik.http.services.swagger.loadbalancer.server.port=8080"
+  #   networks:
+  #     - zimma-network
+  phpmyadmin:
+    container_name: "${DOCKER_APP}-phpmyadmin"
+    image: phpmyadmin/phpmyadmin:latest
+    expose:
+      - "80"
+    environment:
+      - "PMA_HOST=${DB_HOST}"
+      - "PMA_PORT=${DB_PORT}"
+      - "PMA_USER=${DB_USERNAME}"
+      - "PMA_PASSWORD=${DB_PASSWORD}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.phpmyadmin.rule=Host(`pma.${APP_DOMAIN}`)"
+    networks:
+      - zimma-network
+  traefik:
+    image: "traefik:v3.3.3"
+    container_name: "${DOCKER_APP}-traefik"
+    environment:
+      - APP_DOMAIN=${APP_DOMAIN}
+      # - NGROK_DOMAIN=${NGROK_DOMAIN}
+    ports:
+      - "80:80"
+      - "8080:8080" # Expose Dashboard development only
+    volumes:
+      - ./docker/traefik/local:/etc/traefik
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - zimma-network
+
+networks:
+  zimma-network:
+    name: zimma-network
+    driver: bridge

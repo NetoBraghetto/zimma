@@ -7,8 +7,11 @@ import (
 )
 
 func Api(router *gin.Engine) {
-	router.GET("/", controllers.Home)
-	router.GET("/users", controllers.ListUsers)
+	router.GET("/", (&controllers.HomeController{}).List)
+	router.GET("/financial-records", (&controllers.FinancialRecordController{}).List)
+
+	router.GET("/users", (&controllers.UserController{}).List)
+	router.POST("/users", (&controllers.UserController{}).Store)
 
 	router.GET("/up", func(c *gin.Context) {
 		c.AbortWithStatus(204)

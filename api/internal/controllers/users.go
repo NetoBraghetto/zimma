@@ -42,7 +42,7 @@ func (this *UserController) Store(c *gin.Context) {
 	}
 
 	var exists int
-	err := bootstrap.DB.Raw("SELECT 1 FROM user WHERE EXISTS (SELECT 1 FROM user WHERE email = ?)", req.Email).Scan(&exists).Error
+	err := bootstrap.DB.Raw("SELECT 1 FROM user WHERE EXISTS (SELECT 1 FROM user WHERE 'email' = ?)", req.Email).Scan(&exists).Error
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return

@@ -9,9 +9,9 @@ build:
 dev:
 	docker compose start
 
-# stop:
-# 	docker compose stop
-# 	docker ps
+stop:
+	docker compose stop
+	docker ps -a | grep ${DOCKER_APP}
 
 # db-fresh:
 # 	docker exec -it ${DOCKER_APP}-api sh -c "php artisan migrate:fresh --seed"

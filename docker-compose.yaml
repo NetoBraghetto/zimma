@@ -32,28 +32,30 @@ services:
     # Air requires an interactive TTY session to prevent termination issues
     tty: true
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
     networks:
       - zimma-network
-  mysql:
-    container_name: "${DOCKER_APP}-mysql"
-    build: "./docker/mysql"
+  postgres:
+    container_name: "${DOCKER_APP}-postgres"
+    build: "./docker/postgres"
     expose:
-      - "3306"
+      - "5432"
     ports:
-      - "3306:3306"
+      - "5432:5432"
     environment:
-      MYSQL_DATABASE: "${DB_DATABASE}"
-      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
-      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      POSTGRES_DB: "${DB_DATABASE}"
+      POSTGRES_USER: "${DB_USERNAME}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      PGDATA: "/var/lib/postgresql/data"
     volumes:
-      - "./docker/mysql/data:/var/lib/mysql"
-      - "./docker/mysql/mysql.cnf:/etc/mysql/conf.d/mysql.cnf"
+      - ./docker/postgres/data:/var/lib/postgresql/data
+    #   - "./docker/postgres/data:/var/lib/postgresql/data"
+    #   - "./docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf"
     networks:
       - zimma-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "pg_isready", "-U", "${DB_USERNAME}"]
       interval: 10s
       timeout: 20s
       retries: 3
@@ -84,21 +86,21 @@ services:
   #     - "traefik.http.services.swagger.loadbalancer.server.port=8080"
   #   networks:
   #     - zimma-network
-  phpmyadmin:
-    container_name: "${DOCKER_APP}-phpmyadmin"
-    image: phpmyadmin/phpmyadmin:latest
-    expose:
-      - "80"
-    environment:
-      - "PMA_HOST=${DB_HOST}"
-      - "PMA_PORT=${DB_PORT}"
-      - "PMA_USER=${DB_USERNAME}"
-      - "PMA_PASSWORD=${DB_PASSWORD}"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.phpmyadmin.rule=Host(`pma.${APP_DOMAIN}`)"
-    networks:
-      - zimma-network
+  # pgadmin:
+  #   container_name: "${DOCKER_APP}-pgadmin"
+  #   image: dpage/pgadmin4:latest
+  #   expose:
+  #     - "80"
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.pgadmin.rule=Host(`pma.${APP_DOMAIN}`)"
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: "postgres@example.com"
+  #     PGADMIN_DEFAULT_PASSWORD: "123456"
+  #   volumes:
+  #     - pgadmin_data:/var/lib/pgadmin
+  #   networks:
+  #     - zimma-network
   traefik:
     image: "traefik:v3.3.3"
     container_name: "${DOCKER_APP}-traefik"
@@ -118,3 +120,6 @@ networks:
   zimma-network:
     name: zimma-network
     driver: bridge
+
+volumes:
+  pgadmin_data:

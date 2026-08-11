@@ -20,6 +20,6 @@ func main() {
 	bootstrap.InitCors(router)
 	router.Use(bootstrap.InitRateLimit())
 
-	routes.Api(router)
+	routes.RegisterApiRoutes(router)
 	router.Run()
 }

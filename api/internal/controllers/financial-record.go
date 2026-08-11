@@ -98,3 +98,52 @@ func (this *FinancialRecordController) Store(c *gin.Context) {
 
 	c.JSON(201, gin.H{"data": created})
 }
+
+type updateFinancialRecord struct {
+	Name      string          `json:"name" binding:"required,min=3,max=255"`
+	Amount    decimal.Decimal `json:"amount" binding:"required"`
+	DueDate   string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	Confirmed *bool           `json:"confirmed" binding:"required,boolean"`
+}
+
+func (this *FinancialRecordController) Update(c *gin.Context) {
+	var req updateFinancialRecord
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(422, gin.H{"error": err.Error(), "req": req})
+		return
+	}
+	id, _ := c.Params.Get("id")
+
+	if req.Amount.LessThan(decimal.Zero) {
+		c.JSON(422, gin.H{"error": "amount must be greater than or equal to 0"})
+		return
+	}
+
+	ctx := context.Background()
+	resource, err := gorm.G[models.FinancialRecord](bootstrap.DB).Where("id", id).First(ctx)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(404, gin.H{"error": "record not found"})
+		} else {
+			c.JSON(500, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	resource.Name = req.Name
+	resource.Amount = req.Amount
+	resource.DueDate, _ = time.Parse("2006-01-02T15:04:05Z07:00", req.DueDate)
+	if req.Confirmed == nil || !*req.Confirmed {
+		resource.ConfirmedAt = nil
+	} else {
+		t := time.Now()
+		resource.ConfirmedAt = &t
+	}
+	err = bootstrap.DB.Save(resource).Error
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{"data": resource})
+}

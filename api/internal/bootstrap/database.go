@@ -8,6 +8,7 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 
 	"zimma/internal/config"
@@ -21,9 +22,14 @@ func AutoMigrate() {
 
 func InitDatabase() {
 	connector := getDriverConn(config.Get[string]("db.driver"))
+	logLevel := logger.Info
+	if config.Get[string]("app.env") == "production" {
+		logLevel = logger.Silent
+	}
 
 	var dbErr error
 	DB, dbErr = gorm.Open(connector, &gorm.Config{
+		Logger: logger.Default.LogMode(logLevel),
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
 		},
@@ -31,7 +37,6 @@ func InitDatabase() {
 	if dbErr != nil {
 		log.Fatalf("Failed to connect to the database: %v", dbErr)
 	}
-	// defer DB.Close()
 
 	// // Maximum number of open connections to the database.
 	// DB.SetMaxOpenConns(25)

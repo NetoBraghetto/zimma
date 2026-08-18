@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"net/http"
 
 	"zimma/internal/bootstrap"
 	"zimma/internal/models"
@@ -11,21 +12,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserController struct{}
+type UserController struct {
+	RestfulController[models.User]
+}
 
-func (this *UserController) List(c *gin.Context) {
-	ctx := context.Background()
-
-	collection, err := gorm.G[models.User](bootstrap.DB).Limit(30).Find(ctx)
-	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
+func NewUserController() *UserController {
+	return &UserController{
+		RestfulController: RestfulController[models.User]{
+			builder: gorm.G[models.User](bootstrap.DB),
+		},
 	}
-
-	c.JSON(200, gin.H{
-		"data": collection,
-		"meta": gin.H{},
-	})
 }
 
 type storeUser struct {
@@ -37,25 +33,25 @@ type storeUser struct {
 func (this *UserController) Store(c *gin.Context) {
 	var req storeUser
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(422, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
 
 	var exists int
-	err := bootstrap.DB.Raw("SELECT 1 FROM user WHERE EXISTS (SELECT 1 FROM user WHERE 'email' = ?)", req.Email).Scan(&exists).Error
+	err := bootstrap.DB.Raw("SELECT 1 FROM user WHERE EXISTS (SELECT 1 FROM user WHERE email = ?)", req.Email).Scan(&exists).Error
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	if exists == 1 {
-		c.JSON(422, gin.H{"error": "email already exists"})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "email already exists"})
 		return
 	}
 
 	hash, err := services.GenerateArgon2IdHash(req.Password)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -63,9 +59,9 @@ func (this *UserController) Store(c *gin.Context) {
 	created := &models.User{Name: req.Name, Email: req.Email, Password: hash}
 	err = gorm.G[models.User](bootstrap.DB).Create(ctx, created)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(201, gin.H{"data": created})
+	c.JSON(http.StatusCreated, gin.H{"data": created})
 }

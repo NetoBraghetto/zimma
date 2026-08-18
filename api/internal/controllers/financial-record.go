@@ -2,54 +2,27 @@ package controllers
 
 import (
 	"context"
-	"strconv"
+	"net/http"
 	"time"
 
 	"zimma/internal/bootstrap"
-	"zimma/internal/enums"
 	"zimma/internal/models"
-	"zimma/internal/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
 
-type FinancialRecordController struct{}
-
-func (this *FinancialRecordController) getBuilder() gorm.Interface[models.FinancialRecord] {
-	return gorm.G[models.FinancialRecord](bootstrap.DB)
+type FinancialRecordController struct {
+	RestfulController[models.FinancialRecord]
 }
 
-func (this *FinancialRecordController) List(c *gin.Context) {
-	ctx := context.Background()
-	qs := services.QueryString[models.FinancialRecord]{}
-
-	page, _ := strconv.Atoi(
-		c.DefaultQuery(string(enums.QueryStringParamKeyPage), "1"),
-	)
-	pageSize, _ := strconv.Atoi(
-		c.DefaultQuery(string(enums.QueryStringParamKeyPageSize), "30"),
-	)
-
-	// builder := qs.Paginate(this.getBuilder(), services.QueryStringPaginationParams{Page: page, PageSize: pageSize})
-
-	collection, pagination, err := qs.Paginate(
-		this.getBuilder(),
-		&services.QueryStringPaginationParams{Page: page, PageSize: pageSize},
-		ctx,
-	)
-	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(200, gin.H{
-		"data": collection,
-		"meta": gin.H{
-			"pagination": pagination,
+func NewFinancialRecordController() *FinancialRecordController {
+	return &FinancialRecordController{
+		RestfulController: RestfulController[models.FinancialRecord]{
+			builder: gorm.G[models.FinancialRecord](bootstrap.DB),
 		},
-	})
+	}
 }
 
 type storeFinancialRecord struct {
@@ -63,12 +36,12 @@ type storeFinancialRecord struct {
 func (this *FinancialRecordController) Store(c *gin.Context) {
 	var req storeFinancialRecord
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(422, gin.H{"error": err.Error(), "req": req})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error(), "req": req})
 		return
 	}
 
 	if req.Amount.LessThan(decimal.Zero) {
-		c.JSON(422, gin.H{"error": "amount must be greater than or equal to 0"})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "amount must be greater than or equal to 0"})
 		return
 	}
 
@@ -90,13 +63,13 @@ func (this *FinancialRecordController) Store(c *gin.Context) {
 		}(),
 	}
 
-	err := gorm.G[models.FinancialRecord](bootstrap.DB).Create(ctx, created)
+	err := this.getBuilder().Create(ctx, created)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(201, gin.H{"data": created})
+	c.JSON(http.StatusCreated, gin.H{"data": created})
 }
 
 type updateFinancialRecord struct {
@@ -109,23 +82,23 @@ type updateFinancialRecord struct {
 func (this *FinancialRecordController) Update(c *gin.Context) {
 	var req updateFinancialRecord
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(422, gin.H{"error": err.Error(), "req": req})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error(), "req": req})
 		return
 	}
 	id, _ := c.Params.Get("id")
 
 	if req.Amount.LessThan(decimal.Zero) {
-		c.JSON(422, gin.H{"error": "amount must be greater than or equal to 0"})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "amount must be greater than or equal to 0"})
 		return
 	}
 
 	ctx := context.Background()
-	resource, err := gorm.G[models.FinancialRecord](bootstrap.DB).Where("id", id).First(ctx)
+	resource, err := this.getBuilder().Where("id", id).Take(ctx)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(404, gin.H{"error": "record not found"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "record not found"})
 		} else {
-			c.JSON(500, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}
@@ -141,9 +114,9 @@ func (this *FinancialRecordController) Update(c *gin.Context) {
 	}
 	err = bootstrap.DB.Save(resource).Error
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, gin.H{"data": resource})
+	c.JSON(http.StatusOK, gin.H{"data": resource})
 }

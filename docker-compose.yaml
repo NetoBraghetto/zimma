@@ -101,6 +101,22 @@ services:
   #     - pgadmin_data:/var/lib/pgadmin
   #   networks:
   #     - zimma-network
+  webapp:
+    image: node:lts
+    container_name: "${DOCKER_APP}-webapp"
+    expose:
+      - "3000"
+    volumes:
+      - ./webapp:/webapp:Z
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.zimma-webapp.rule=Host(`${APP_DOMAIN}`)
+      - traefik.http.services.zimma-webapp.loadbalancer.server.port=3000
+    command: npm run dev
+    user: "1000:1000"
+    working_dir: /webapp
+    networks:
+      - zimma-network
   traefik:
     image: "traefik:v3.3.3"
     container_name: "${DOCKER_APP}-traefik"

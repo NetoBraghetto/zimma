@@ -1,19 +1,35 @@
 package config
 
 import (
+	"log"
 	"os"
 	"strings"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var configs = map[string]any{}
 
 func Load() {
+	// Sign and get the complete encoded token as a string using the secret
+	signBytes := []byte(os.Getenv("APP_KEY"))
+	signKey, err := jwt.ParseRSAPrivateKeyFromPEM(signBytes)
+	if err != nil {
+		log.Printf("failed to parse RSA private key: %v", err)
+	}
+	verifyBytes := []byte(os.Getenv("APP_PUBLIC_KEY"))
+	verifyKey, err := jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
+	if err != nil {
+		log.Printf("failed to parse RSA public key: %v", err)
+	}
+
 	configs = map[string]any{
 		"app": map[string]any{
-			"name":  os.Getenv("APP_NAME"),
-			"env":   os.Getenv("APP_ENV"),
-			"debug": os.Getenv("APP_DEBUG") == "true",
-			// "key":   os.Getenv("APP_KEY"),
+			"name":          os.Getenv("APP_NAME"),
+			"env":           os.Getenv("APP_ENV"),
+			"debug":         os.Getenv("APP_DEBUG") == "true",
+			"signing_key":   signKey,
+			"verifying_key": verifyKey,
 		},
 		"db": map[string]any{
 			"driver":   os.Getenv("DB_DRIVER"),

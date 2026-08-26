@@ -1,4 +1,9 @@
 -include .env
+SHELL=/bin/bash
+TZ=UTC
+CURRENT_DIR=$(PWD)
+USERID=$(shell id -u)
+USERGP=$(shell id -g)
 
 build:
 	docker compose build
@@ -25,8 +30,23 @@ tty:
 ttyu:
 	docker exec -it -u 1000:1000 ${DOCKER_APP}-api bash
 
+tty-webapp:
+	docker exec -it -u ${USERID}:${USERGP} ${DOCKER_APP}-webapp bash
+
 # openapi:
 # 	docker exec -it ${DOCKER_APP}-api sh -c "./vendor/bin/openapi app/ --version 3.1.0 --output openapi.yaml"
+
+key-generate:
+	@openssl genrsa -out ./private_key.pem 4096
+	@openssl rsa -in private_key.pem -pubout -out public_key.pem
+	@cat ./private_key.pem | awk '{printf "%s\\n", $$0}'
+	@echo ""
+	@echo "Copy the above private key to APP_KEY in your .env file"
+	@echo ""
+	@cat ./public_key.pem | awk '{printf "%s\\n", $$0}'
+	@echo ""
+	@echo "Copy the above public key to PUBLIC_KEY in your .env file"
+	@rm ./private_key.pem ./public_key.pem
 
 setup:
 	cp -n ./.env.example ./.env

@@ -1,4 +1,4 @@
-import { type FormatGeneralOptions, formatGeneral } from "cleave-zen";
+import { type FormatGeneralOptions, type FormatNumeralOptions, formatGeneral, formatNumeral } from "cleave-zen";
 import { type ReactNode, useRef } from "react";
 import { type Control, type FieldError, type FieldValues, type Path, useController } from "react-hook-form";
 import { Field, FieldDescription, FieldError as FieldErrorMessage, FieldLabel } from "@/components/ui/field";
@@ -10,7 +10,7 @@ export interface FormMaskedProps<F extends FieldValues> extends React.InputHTMLA
   control: Control<F>;
   help?: string;
   error?: FieldError;
-  options: FormatGeneralOptions;
+  options: FormatGeneralOptions | FormatNumeralOptions;
 }
 
 function FormMasked<F extends FieldValues>({ label, name, control, help, error, options, ...props }: FormMaskedProps<F>): ReactNode {
@@ -36,7 +36,11 @@ function FormMasked<F extends FieldValues>({ label, name, control, help, error, 
         value={field.value || ""}
         aria-invalid={isInvalid}
         onChange={(e) => {
-          field.onChange(formatGeneral(e.target.value, options));
+          if ("Inumeral" in options) {
+            field.onChange(formatNumeral(e.target.value, options));
+          } else if ("blocks" in options) {
+            field.onChange(formatGeneral(e.target.value, options));
+          }
         }}
       />
       {help ? <FieldDescription>{help}</FieldDescription> : null}
@@ -44,4 +48,5 @@ function FormMasked<F extends FieldValues>({ label, name, control, help, error, 
     </Field>
   );
 }
+
 export { FormMasked };

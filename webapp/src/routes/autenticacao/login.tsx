@@ -154,7 +154,7 @@ function RouteComponent() {
             placeholder="email@example.com"
             autoComplete="username"
             addons={[
-              <div key="mail-addon" className="pl-2">
+              <div key="mail-addon" className="px-2">
                 <TbMail />
               </div>,
             ]}
@@ -166,7 +166,7 @@ function RouteComponent() {
             error={errors.password}
             autoComplete="current-password"
             addons={[
-              <div key="lock-addon" className="pl-2">
+              <div key="lock-addon" className="px-2">
                 <TbLock />
               </div>,
             ]}

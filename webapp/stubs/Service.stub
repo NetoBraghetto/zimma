@@ -1,0 +1,18 @@
+import type { SqlDateTimeFormat } from "@/lib/ts-helpers";
+import { type NewResource, RestfulService } from "@/services/restful-service";
+
+export interface New{{DummyResource}}Model extends NewResource {
+  name: string;
+}
+
+export interface {{DummyResource}}Model extends New{{DummyResource}}Model {
+  readonly id: number;
+  readonly created_at: SqlDateTimeFormat;
+  readonly updated_at: SqlDateTimeFormat;
+}
+
+class {{DummyResource}}Service extends RestfulService<{{DummyResource}}Model> {
+  protected path = "{{dummy-resource}}";
+}
+
+export const {{dummyResource}}Service = new {{DummyResource}}Service();

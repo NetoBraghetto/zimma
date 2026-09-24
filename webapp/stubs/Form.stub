@@ -1,0 +1,74 @@
+import { type ReactNode, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { Form } from "@/components/form/form";
+import { FormErrors } from "@/components/form/form-errors";
+import { FormText } from "@/components/form/form-text";
+import { Submit } from "@/components/form/submit";
+import { FieldLegend, FieldSet } from "@/components/ui/field";
+import type { SucessServerResponse } from "@/lib/format-success-response";
+import { type {{DummyResource}}Model, {{dummyResource}}Service } from "@/services/{{dummy-resource}}-service";
+
+type {{DummyResource}}FormProps = {
+  id?: string;
+  onSave?: (response: SucessServerResponse<{{DummyResource}}Model>) => void;
+};
+
+type FormValues = {
+  name: string;
+};
+
+export function {{DummyResource}}Form({ id, onSave }: {{DummyResource}}FormProps): ReactNode {
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+    setError,
+    clearErrors,
+  } = useForm<FormValues>({
+    defaultValues: {
+      name: "",
+    },
+  });
+
+  useEffect(() => {
+    async function request() {
+      if (!id) {
+        return;
+      }
+
+      try {
+        const { data } = await {{dummyResource}}Service.show(id);
+        reset(data);
+      } catch (_error) {}
+    }
+    request();
+  }, [id, reset]);
+
+  async function onSubmit(values: FormValues) {
+    if (isSubmitting) {
+      return;
+    }
+
+    try {
+      const response = await {{dummyResource}}Service.save(values, id);
+      if (onSave) {
+        onSave(response);
+      }
+    } catch (error) {
+      FormErrors(error, setError);
+    }
+  }
+
+  return (
+    <Form onSubmit={handleSubmit(onSubmit)} className="grid w-full items-start gap-6">
+      <FieldSet>
+        <FieldLegend>{{DummyResourceName}}</FieldLegend>
+        <FormText label="Nome" name="name" error={errors.name} control={control} />
+        <div className="flex justify-end gap-4">
+          <Submit onClick={() => clearErrors()} isLoading={isSubmitting}>Salvar</Submit>
+        </div>
+      </FieldSet>
+    </Form>
+  );
+}

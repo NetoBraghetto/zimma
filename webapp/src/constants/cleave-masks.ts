@@ -1,4 +1,4 @@
-import type { FormatGeneralOptions } from "cleave-zen";
+import type { FormatGeneralOptions, FormatNumeralOptions } from "cleave-zen";
 
 export const CleavePhoneOptions: FormatGeneralOptions = {
   blocks: [0, 2, 0, 4, 5],
@@ -18,13 +18,15 @@ export const CleaveCnpjOptions: FormatGeneralOptions = {
   numericOnly: true,
 };
 
-// export const CleaveBRLOptions: FormatNumeralOptions = {
-//   numeral: true,
-//   numeralDecimalMark: ",",
-//   numeralThousandsGroupStyle: "none",
-//   delimiter: ".",
-//   stripLeadingZeroes: false,
-// };
+export const CleaveBRLOptions: FormatNumeralOptions & { Inumeral: boolean } = {
+  Inumeral: true,
+  numeralDecimalMark: ",",
+  // numeralThousandsGroupStyle: "none",
+  delimiter: ".",
+  stripLeadingZeroes: false,
+  // prefix: "R$ ",
+  // numeralThousandsGroupStyle: "",
+};
 
 // export const CleaveTimeOptions: FormatTimeOptions = {
 //   time: true,

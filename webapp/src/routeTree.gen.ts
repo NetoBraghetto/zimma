@@ -17,6 +17,9 @@ import { Route as AutenticacaoCadastreSeRouteImport } from './routes/autenticaca
 import { Route as AutenticacaoEsqueciMinhaSenhaRouteImport } from './routes/autenticacao/esqueci-minha-senha'
 import { Route as AutenticacaoLoginRouteImport } from './routes/autenticacao/login'
 import { Route as AutenticacaoResetSenhaRouteImport } from './routes/autenticacao/reset-senha'
+import { Route as ProtectedDespesasIndexRouteImport } from './routes/_protected/despesas/index'
+import { Route as ProtectedDespesasNovaRouteImport } from './routes/_protected/despesas/nova'
+import { Route as ProtectedDespesasFinancialRecordIdAlterarRouteImport } from './routes/_protected/despesas/$financialRecordId/alterar'
 
 const ProtectedRouteRoute = ProtectedRouteRouteImport.update({
   id: '/_protected',
@@ -58,6 +61,22 @@ const AutenticacaoResetSenhaRoute = AutenticacaoResetSenhaRouteImport.update({
   path: '/reset-senha',
   getParentRoute: () => AutenticacaoRouteRoute,
 } as any)
+const ProtectedDespesasIndexRoute = ProtectedDespesasIndexRouteImport.update({
+  id: '/despesas/',
+  path: '/despesas/',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedDespesasNovaRoute = ProtectedDespesasNovaRouteImport.update({
+  id: '/despesas/nova',
+  path: '/despesas/nova',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedDespesasFinancialRecordIdAlterarRoute =
+  ProtectedDespesasFinancialRecordIdAlterarRouteImport.update({
+    id: '/despesas/$financialRecordId/alterar',
+    path: '/despesas/$financialRecordId/alterar',
+    getParentRoute: () => ProtectedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof ProtectedIndexRoute
@@ -67,6 +86,9 @@ export interface FileRoutesByFullPath {
   '/autenticacao/esqueci-minha-senha': typeof AutenticacaoEsqueciMinhaSenhaRoute
   '/autenticacao/login': typeof AutenticacaoLoginRoute
   '/autenticacao/reset-senha': typeof AutenticacaoResetSenhaRoute
+  '/despesas/nova': typeof ProtectedDespesasNovaRoute
+  '/despesas/': typeof ProtectedDespesasIndexRoute
+  '/despesas/$financialRecordId/alterar': typeof ProtectedDespesasFinancialRecordIdAlterarRoute
 }
 export interface FileRoutesByTo {
   '/autenticacao': typeof AutenticacaoRouteRouteWithChildren
@@ -76,6 +98,9 @@ export interface FileRoutesByTo {
   '/autenticacao/login': typeof AutenticacaoLoginRoute
   '/autenticacao/reset-senha': typeof AutenticacaoResetSenhaRoute
   '/': typeof ProtectedIndexRoute
+  '/despesas/nova': typeof ProtectedDespesasNovaRoute
+  '/despesas': typeof ProtectedDespesasIndexRoute
+  '/despesas/$financialRecordId/alterar': typeof ProtectedDespesasFinancialRecordIdAlterarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -87,6 +112,9 @@ export interface FileRoutesById {
   '/autenticacao/login': typeof AutenticacaoLoginRoute
   '/autenticacao/reset-senha': typeof AutenticacaoResetSenhaRoute
   '/_protected/': typeof ProtectedIndexRoute
+  '/_protected/despesas/nova': typeof ProtectedDespesasNovaRoute
+  '/_protected/despesas/': typeof ProtectedDespesasIndexRoute
+  '/_protected/despesas/$financialRecordId/alterar': typeof ProtectedDespesasFinancialRecordIdAlterarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -98,6 +126,9 @@ export interface FileRouteTypes {
     | '/autenticacao/esqueci-minha-senha'
     | '/autenticacao/login'
     | '/autenticacao/reset-senha'
+    | '/despesas/nova'
+    | '/despesas/'
+    | '/despesas/$financialRecordId/alterar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/autenticacao'
@@ -107,6 +138,9 @@ export interface FileRouteTypes {
     | '/autenticacao/login'
     | '/autenticacao/reset-senha'
     | '/'
+    | '/despesas/nova'
+    | '/despesas'
+    | '/despesas/$financialRecordId/alterar'
   id:
     | '__root__'
     | '/_protected'
@@ -117,6 +151,9 @@ export interface FileRouteTypes {
     | '/autenticacao/login'
     | '/autenticacao/reset-senha'
     | '/_protected/'
+    | '/_protected/despesas/nova'
+    | '/_protected/despesas/'
+    | '/_protected/despesas/$financialRecordId/alterar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -182,17 +219,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AutenticacaoResetSenhaRouteImport
       parentRoute: typeof AutenticacaoRouteRoute
     }
+    '/_protected/despesas/': {
+      id: '/_protected/despesas/'
+      path: '/despesas'
+      fullPath: '/despesas/'
+      preLoaderRoute: typeof ProtectedDespesasIndexRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/despesas/nova': {
+      id: '/_protected/despesas/nova'
+      path: '/despesas/nova'
+      fullPath: '/despesas/nova'
+      preLoaderRoute: typeof ProtectedDespesasNovaRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/despesas/$financialRecordId/alterar': {
+      id: '/_protected/despesas/$financialRecordId/alterar'
+      path: '/despesas/$financialRecordId/alterar'
+      fullPath: '/despesas/$financialRecordId/alterar'
+      preLoaderRoute: typeof ProtectedDespesasFinancialRecordIdAlterarRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
   }
 }
 
 interface ProtectedRouteRouteChildren {
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
   ProtectedIndexRoute: typeof ProtectedIndexRoute
+  ProtectedDespesasNovaRoute: typeof ProtectedDespesasNovaRoute
+  ProtectedDespesasIndexRoute: typeof ProtectedDespesasIndexRoute
+  ProtectedDespesasFinancialRecordIdAlterarRoute: typeof ProtectedDespesasFinancialRecordIdAlterarRoute
 }
 
 const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
   ProtectedDashboardRoute: ProtectedDashboardRoute,
   ProtectedIndexRoute: ProtectedIndexRoute,
+  ProtectedDespesasNovaRoute: ProtectedDespesasNovaRoute,
+  ProtectedDespesasIndexRoute: ProtectedDespesasIndexRoute,
+  ProtectedDespesasFinancialRecordIdAlterarRoute:
+    ProtectedDespesasFinancialRecordIdAlterarRoute,
 }
 
 const ProtectedRouteRouteWithChildren = ProtectedRouteRoute._addFileChildren(

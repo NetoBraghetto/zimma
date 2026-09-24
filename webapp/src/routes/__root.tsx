@@ -1,9 +1,10 @@
-import { createRootRoute, HeadContent, Link, Outlet } from "@tanstack/react-router";
+import { createRootRouteWithContext, HeadContent, Link, Outlet } from "@tanstack/react-router";
 import { Toaster } from "sonner";
+import type { AppContext } from "@/app";
 import NoDataSvg from "@/assets/images/undraw_no_data.svg?url";
 import { buttonVariants } from "@/components/ui/button";
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<AppContext>()({
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
 });

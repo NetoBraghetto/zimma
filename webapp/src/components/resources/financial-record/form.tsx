@@ -7,6 +7,7 @@ import { FormErrors } from "@/components/form/form-errors";
 import { FormGroupMasked } from "@/components/form/form-group-masked";
 import { FormRadioGroup } from "@/components/form/form-radio-group";
 import { FormSelect } from "@/components/form/form-select";
+import { FormTags } from "@/components/form/form-tags";
 import { FormText } from "@/components/form/form-text";
 import { Submit } from "@/components/form/submit";
 import { FieldLegend, FieldSet } from "@/components/ui/field";
@@ -119,9 +120,10 @@ export function FinancialRecordForm({ id, onSave }: FinancialRecordFormProps): R
           error={errors.recurrence}
           options={FinancialRecordRecurrenceList}
         />
-        {/* <FormMasked prefix="R$" label="Valor" name="value" error={errors.value} control={control} options={CleaveBRLOptions} /> */}
+
         {renderRecurrenceOptions()}
         <FormDate label="Vencimento" name="due_date" control={control} error={errors.due_date} />
+        <FormTags label="Tags" name="tags" control={control} options={[]} />
         <div className="flex justify-end gap-4">
           <Submit onClick={() => clearErrors()} isLoading={isSubmitting}>
             Salvar

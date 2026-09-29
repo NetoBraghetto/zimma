@@ -8,7 +8,7 @@ import type { TableColumn } from "@/components/app-table";
 import { AppTable } from "@/components/app-table";
 import { DeletionModal } from "@/components/deletion-modal";
 import { PaginationCount } from "@/components/pagination-count";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search } from "@/components/ui/search";
 import { QS_SEARCH_INDEX, QS_SORT_INDEX } from "@/constants/querystring";
@@ -63,11 +63,9 @@ function RouteComponent() {
       className: "w-0",
       render: (p) => {
         return (
-          <Button variant="outline" size="icon" asChild>
-            <Link to={`/despesas/${p.id}/alterar`}>
-              <TbEdit className="size-4" />
-            </Link>
-          </Button>
+          <Link to={`/despesas/${p.id}/alterar`} className={buttonVariants({ variant: "outline", size: "icon" })}>
+            <TbEdit className="size-4" />
+          </Link>
         );
       },
     },
@@ -92,12 +90,10 @@ function RouteComponent() {
           <Search onSearch={onSearch} q={search[QS_SEARCH_INDEX]} />
         </div>
         <div className="ml-auto">
-          <Button size="sm" className="h-8 gap-1" asChild>
-            <Link to="/despesas/novo">
-              <TbPlus className="size-5" />
-              <span className="whitespace-nowrap">Adicionar despesa</span>
-            </Link>
-          </Button>
+          <Link to="/despesas/nova" className={buttonVariants({ size: "sm" })}>
+            <TbPlus className="size-5" />
+            <span className="whitespace-nowrap">Adicionar despesa</span>
+          </Link>
         </div>
       </div>
       <Card>

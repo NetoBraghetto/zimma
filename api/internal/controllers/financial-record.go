@@ -26,11 +26,36 @@ func NewFinancialRecordController() *FinancialRecordController {
 }
 
 type storeFinancialRecord struct {
-	Name      string          `json:"name" binding:"required,min=3,max=255"`
-	Amount    decimal.Decimal `json:"amount" binding:"required"`
-	Type      int             `json:"type" binding:"required,oneof=1 2"`
-	DueDate   string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
-	Confirmed *bool           `json:"confirmed" binding:"required,boolean"`
+	Name         string          `json:"name" binding:"required,min=3,max=255"`
+	Amount       decimal.Decimal `json:"amount" binding:"required"`
+	Type         int             `json:"type" binding:"required,oneof=1 2"`
+	DueDate      string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	Confirmed    *bool           `json:"confirmed" binding:"required,boolean"`
+	RecurrenceId int             `json:"recurrence_id" binding:"required,oneof=1 2 3 4"`
+	IntervalId   *int            `json:"interval_id"`
+	IntervalDays *int            `json:"interval_days"`
+	RepeatCount  *int            `json:"repeat_count"`
+}
+
+func (this *storeFinancialRecord) hasRepeatCount() bool {
+	return this.RecurrenceId == models.FinancialRecordSerieRecurrence.REPEAT || this.RecurrenceId == models.FinancialRecordSerieRecurrence.SPLITED
+}
+
+func (this *storeFinancialRecord) validateRecurrence() string {
+	if this.RecurrenceId == models.FinancialRecordSerieRecurrence.UNIQUE {
+		return ""
+	}
+
+	if this.IntervalId == nil || *this.IntervalId < int(models.FinancialRecordSerieInterval.DAILY) || *this.IntervalId > int(models.FinancialRecordSerieInterval.CUSTOM) {
+		return "interval must be one of 1 2 3 4 5"
+	}
+	if *this.IntervalId == models.FinancialRecordSerieInterval.CUSTOM && (this.IntervalDays == nil || *this.IntervalDays < 1) {
+		return "interval_days must be greater than or equal to 1"
+	}
+	if this.hasRepeatCount() && (this.RepeatCount == nil || *this.RepeatCount < 2 || *this.RepeatCount > 360) {
+		return "repeat_count must be between 2 and 360"
+	}
+	return ""
 }
 
 func (this *FinancialRecordController) Store(c *gin.Context) {
@@ -45,15 +70,18 @@ func (this *FinancialRecordController) Store(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
+	if msg := req.validateRecurrence(); msg != "" {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": msg})
+		return
+	}
+
+	// ctx := context.Background()
+	dueDate, _ := time.Parse("2006-01-02T15:04:05Z07:00", req.DueDate)
 	created := &models.FinancialRecord{
-		Name:   req.Name,
-		Amount: req.Amount,
-		Type:   models.FinancialRecordType(req.Type),
-		DueDate: func() time.Time {
-			t, _ := time.Parse("2006-01-02T15:04:05Z07:00", req.DueDate)
-			return t
-		}(),
+		Name:    req.Name,
+		Amount:  req.Amount,
+		Type:    req.Type,
+		DueDate: dueDate,
 		ConfirmedAt: func() *time.Time {
 			if req.Confirmed == nil || !*req.Confirmed {
 				return nil
@@ -63,7 +91,51 @@ func (this *FinancialRecordController) Store(c *gin.Context) {
 		}(),
 	}
 
-	err := this.getBuilder().Create(ctx, created)
+	var err error
+	err = bootstrap.DB.WithContext(c).Transaction(func(tx *gorm.DB) error {
+		serie := &models.FinancialRecordSerie{
+			Name:         req.Name,
+			Amount:       req.Amount,
+			Type:         req.Type,
+			RecurrenceId: req.RecurrenceId,
+			IntervalId:   req.IntervalId,
+			IntervalDays: req.IntervalDays,
+			RepeatCount:  req.RepeatCount,
+			StartDate:    dueDate,
+		}
+		if serie.IntervalId == nil || *serie.IntervalId != models.FinancialRecordSerieInterval.CUSTOM {
+			serie.IntervalDays = nil
+		}
+		if !req.hasRepeatCount() {
+			serie.RepeatCount = nil
+		}
+		if err := tx.Create(serie).Error; err != nil {
+			return err
+		}
+
+		total := 1
+		if serie.RepeatCount != nil {
+			total = *serie.RepeatCount
+		}
+		occurrences := make([]models.FinancialRecord, total)
+		for i := range occurrences {
+			installment := i + 1
+			occurrences[i] = models.FinancialRecord{
+				Name:                   serie.Name,
+				Amount:                 serie.OccurrenceAmount(i),
+				Type:                   serie.Type,
+				DueDate:                serie.OccurrenceDate(i),
+				FinancialRecordSerieId: serie.ID,
+				Installment:            installment,
+			}
+		}
+		occurrences[0].ConfirmedAt = created.ConfirmedAt
+		if err := tx.Create(&occurrences).Error; err != nil {
+			return err
+		}
+		*created = occurrences[0]
+		return nil
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

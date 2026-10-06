@@ -11,11 +11,15 @@ interface Resource extends NewResource {
 export type PaginationMetaReponse = {
   page: number;
   total: number;
-  perPage: number;
+  pageSize: number;
+};
+
+export type ListMetaResponse = {
+  pagination: PaginationMetaReponse;
 };
 
 export interface CanList<M> {
-  get: <T = M>(search?: URLSearchParams) => Promise<SucessServerResponse<T[], PaginationMetaReponse>>;
+  get: <T = M, MT extends ListMetaResponse = ListMetaResponse>(search?: URLSearchParams) => Promise<SucessServerResponse<T[], MT>>;
 }
 
 export interface CanView<M> {
@@ -58,7 +62,7 @@ export abstract class RestfulService<
 {
   protected path = "";
 
-  get<T = ListM>(params?: URLSearchParams): Promise<SucessServerResponse<T[], PaginationMetaReponse>> {
+  get<T = ListM, MT extends ListMetaResponse = ListMetaResponse>(params?: URLSearchParams): Promise<SucessServerResponse<T[], MT>> {
     const querystring = params ? `?${decodeURIComponent(params.toString())}` : "";
     return new Promise((resolve, reject) => {
       api

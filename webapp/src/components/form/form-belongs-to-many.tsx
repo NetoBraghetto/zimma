@@ -53,7 +53,7 @@ function FormBelongsToMany<
   const [pagination, setPagination] = useState<PaginationMetaReponse>({
     page: 1,
     total: 0,
-    perPage: 15,
+    pageSize: 15,
   });
   const { field } = useController({
     name,
@@ -71,7 +71,7 @@ function FormBelongsToMany<
           }),
         );
         setOptions(data);
-        setPagination(meta);
+        setPagination(meta.pagination);
       } catch (searchError: unknown) {
         console.log(searchError);
       }
@@ -193,7 +193,7 @@ function FormBelongsToMany<
                   <ControlledPagination
                     onPaginate={onPaginate}
                     currentPage={pagination.page}
-                    perPage={pagination.perPage}
+                    perPage={pagination.pageSize}
                     total={pagination.total}
                   />
                 </div>
@@ -231,4 +231,5 @@ function FormBelongsToMany<
     </div>
   );
 }
+
 export { FormBelongsToMany };

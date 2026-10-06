@@ -58,10 +58,10 @@ type FinancialRecordSerie struct {
 	RepeatCount  *int            `json:"repeat_count"`
 	StartDate    time.Time       `gorm:"not null" json:"start_date"`
 	BelongsToUser
-	CreatedAt time.Time      `gorm:"not null" json:"created_at"`
-	UpdatedAt time.Time      `gorm:"not null" json:"-"`
-	DeletedAt gorm.DeletedAt `json:"-"`
-	Records   []FinancialRecord
+	CreatedAt time.Time         `gorm:"not null" json:"created_at"`
+	UpdatedAt time.Time         `gorm:"not null" json:"-"`
+	DeletedAt gorm.DeletedAt    `json:"-"`
+	Records   []FinancialRecord `json:"-"`
 }
 
 // OccurrenceAmount returns the amount of the zero-based occurrence i. SPLITED series

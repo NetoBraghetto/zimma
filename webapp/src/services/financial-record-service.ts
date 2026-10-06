@@ -8,7 +8,7 @@ import { type NewResource, RestfulService } from "@/services/restful-service";
 
 export interface NewFinancialRecordModel extends NewResource {
   name: string;
-  value: string;
+  amount: string;
   due_date: string;
   type: FinancialRecordTypeValue;
   confirmed: boolean;
@@ -18,10 +18,19 @@ export interface NewFinancialRecordModel extends NewResource {
   repeat_count?: number | null;
 }
 
+export interface FinancialRecordSerieModel {
+  readonly id: number;
+  readonly recurrence: FinancialRecordRecurrenceValue;
+  readonly repeat_count: number | null;
+}
+
 export interface FinancialRecordModel extends NewFinancialRecordModel {
   readonly id: number;
   readonly series_id: number | null;
   readonly installment: number | null;
+  readonly amount: string;
+  readonly confirmed_at: string | null;
+  readonly serie?: FinancialRecordSerieModel;
   readonly created_at: SqlDateTimeFormat;
   readonly updated_at: SqlDateTimeFormat;
 }

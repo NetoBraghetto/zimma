@@ -17,6 +17,8 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline underline-offset-4 hover:underline",
+        expense: "bg-expense text-white hover:bg-expense/80 focus-visible:border-expense/40 focus-visible:ring-expense/30",
+        income: "bg-income text-white hover:bg-income/80 focus-visible:border-income/40 focus-visible:ring-income/30",
       },
       size: {
         default: "h-10 gap-1.5 px-6 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",

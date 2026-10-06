@@ -1,3 +1,4 @@
 .env
 /api/tmp/*
 /docker/postgres/data/*
+/todo.md

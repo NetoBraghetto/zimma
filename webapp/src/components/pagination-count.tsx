@@ -6,8 +6,8 @@ export type PaginationCountProps = {
 };
 
 export function PaginationCount({ pagination, resource = "registros" }: PaginationCountProps) {
-  const from = (pagination.page - 1) * pagination.perPage + 1;
-  let to = from + (pagination.perPage - 1);
+  const from = (pagination.page - 1) * pagination.pageSize + 1;
+  let to = from + (pagination.pageSize - 1);
   to = pagination.total < to ? pagination.total : to;
   return (
     <div className="text-xs text-muted-foreground">

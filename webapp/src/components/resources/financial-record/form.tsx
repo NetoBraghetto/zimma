@@ -33,8 +33,6 @@ type FinancialRecordFormProps = {
 
 type FormValues = NewFinancialRecordModel & {
   tags: { id: number; name: string }[];
-  // value: string;
-  // recurrence: string;
 };
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -93,7 +91,7 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
   } = useForm<FormValues>({
     defaultValues: {
       name: "",
-      value: "",
+      amount: "",
       due_date: "",
       type,
       confirmed: false,
@@ -249,9 +247,9 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
         <FormText label="Descrição" name="name" error={errors.name} control={control} />
         <FormGroupMasked
           label="Valor"
-          name="value"
+          name="amount"
           control={control}
-          error={errors.value}
+          error={errors.amount}
           placeholder="0,00"
           options={CleaveBRLOptions}
           addons={[

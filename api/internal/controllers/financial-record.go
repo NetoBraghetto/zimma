@@ -3,10 +3,13 @@ package controllers
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"zimma/internal/bootstrap"
+	"zimma/internal/enums"
 	"zimma/internal/models"
+	"zimma/internal/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
@@ -23,6 +26,55 @@ func NewFinancialRecordController() *FinancialRecordController {
 			builder: gorm.G[models.FinancialRecord](bootstrap.DB),
 		},
 	}
+}
+
+type listFinancialRecord struct {
+	Month string `form:"month" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	Type  int    `form:"type" binding:"omitempty,oneof=1 2"`
+}
+
+func (this *FinancialRecordController) List(c *gin.Context) {
+	var req listFinancialRecord
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error(), "req": req})
+		return
+	}
+
+	month, _ := time.Parse("2006-01-02T15:04:05Z07:00", req.Month)
+	monthStart := time.Date(month.Year(), month.Month(), 1, 0, 0, 0, 0, month.Location())
+	monthEnd := monthStart.AddDate(0, 1, 0)
+
+	ctx := context.Background()
+	qs := services.QueryString[models.FinancialRecord]{}
+
+	builder := this.getBuilder().Where("due_date >= ? AND due_date < ?", monthStart, monthEnd)
+	if req.Type != 0 {
+		builder = builder.Where("type = ?", req.Type)
+	}
+
+	page, _ := strconv.Atoi(
+		c.DefaultQuery(string(enums.QueryStringParamKeyPage), "1"),
+	)
+	pageSize, _ := strconv.Atoi(
+		c.DefaultQuery(string(enums.QueryStringParamKeyPageSize), "30"),
+	)
+
+	collection, pagination, err := qs.Paginate(
+		builder.Order("due_date, id").Preload("Serie", nil),
+		&services.QueryStringPaginationParams{Page: page, PageSize: pageSize},
+		ctx,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": collection,
+		"meta": gin.H{
+			"pagination": pagination,
+		},
+	})
 }
 
 type storeFinancialRecord struct {

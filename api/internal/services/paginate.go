@@ -12,15 +12,22 @@ type QueryStringPaginationParams struct {
 }
 
 type QueryStringPaginationMeta struct {
-	Page     int
-	PageSize int
-	Total    int
+	Page     int `json:"page"`
+	PageSize int `json:"pageSize"`
+	Total    int `json:"total"`
+}
+
+// Paginatable is satisfied by both gorm.Interface[T] and gorm.ChainInterface[T],
+// so Paginate accepts a bare builder or one with filters applied.
+type Paginatable[T any] interface {
+	Count(ctx context.Context, column string) (int64, error)
+	Limit(limit int) gorm.ChainInterface[T]
 }
 
 type QueryString[T any] struct{}
 
 func (this *QueryString[T]) Paginate(
-	builder gorm.Interface[T],
+	builder Paginatable[T],
 	params *QueryStringPaginationParams,
 	ctx context.Context,
 ) ([]T, QueryStringPaginationMeta, error) {

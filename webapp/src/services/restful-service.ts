@@ -124,15 +124,14 @@ export abstract class RestfulService<
     const headers: Record<string, string> = {};
     let data: Record<string, unknown> | FormData | string = sendData;
     if (sendData instanceof FormData) {
-      sendData.append("_method", "PUT");
       headers["Content-type"] = "multipart/form-data";
     } else {
-      data = JSON.stringify({ ...sendData, _method: "PUT" });
+      data = JSON.stringify(sendData);
       headers["Content-type"] = "application/json";
     }
     return new Promise((resolve, reject) => {
       api
-        .post(`${this.path}/${id}`, data, {
+        .put(`${this.path}/${id}`, data, {
           headers,
           signal: controller.signal,
         })

@@ -19,7 +19,10 @@ import { Route as AutenticacaoLoginRouteImport } from './routes/autenticacao/log
 import { Route as AutenticacaoResetSenhaRouteImport } from './routes/autenticacao/reset-senha'
 import { Route as ProtectedDespesasIndexRouteImport } from './routes/_protected/despesas/index'
 import { Route as ProtectedDespesasNovaRouteImport } from './routes/_protected/despesas/nova'
+import { Route as ProtectedTagsIndexRouteImport } from './routes/_protected/tags/index'
+import { Route as ProtectedTagsNovaRouteImport } from './routes/_protected/tags/nova'
 import { Route as ProtectedDespesasFinancialRecordIdAlterarRouteImport } from './routes/_protected/despesas/$financialRecordId/alterar'
+import { Route as ProtectedTagsTagIdAlterarRouteImport } from './routes/_protected/tags/$tagId/alterar'
 
 const ProtectedRouteRoute = ProtectedRouteRouteImport.update({
   id: '/_protected',
@@ -71,10 +74,26 @@ const ProtectedDespesasNovaRoute = ProtectedDespesasNovaRouteImport.update({
   path: '/despesas/nova',
   getParentRoute: () => ProtectedRouteRoute,
 } as any)
+const ProtectedTagsIndexRoute = ProtectedTagsIndexRouteImport.update({
+  id: '/tags/',
+  path: '/tags/',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedTagsNovaRoute = ProtectedTagsNovaRouteImport.update({
+  id: '/tags/nova',
+  path: '/tags/nova',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
 const ProtectedDespesasFinancialRecordIdAlterarRoute =
   ProtectedDespesasFinancialRecordIdAlterarRouteImport.update({
     id: '/despesas/$financialRecordId/alterar',
     path: '/despesas/$financialRecordId/alterar',
+    getParentRoute: () => ProtectedRouteRoute,
+  } as any)
+const ProtectedTagsTagIdAlterarRoute =
+  ProtectedTagsTagIdAlterarRouteImport.update({
+    id: '/tags/$tagId/alterar',
+    path: '/tags/$tagId/alterar',
     getParentRoute: () => ProtectedRouteRoute,
   } as any)
 
@@ -87,8 +106,11 @@ export interface FileRoutesByFullPath {
   '/autenticacao/login': typeof AutenticacaoLoginRoute
   '/autenticacao/reset-senha': typeof AutenticacaoResetSenhaRoute
   '/despesas/nova': typeof ProtectedDespesasNovaRoute
+  '/tags/nova': typeof ProtectedTagsNovaRoute
   '/despesas/': typeof ProtectedDespesasIndexRoute
+  '/tags/': typeof ProtectedTagsIndexRoute
   '/despesas/$financialRecordId/alterar': typeof ProtectedDespesasFinancialRecordIdAlterarRoute
+  '/tags/$tagId/alterar': typeof ProtectedTagsTagIdAlterarRoute
 }
 export interface FileRoutesByTo {
   '/autenticacao': typeof AutenticacaoRouteRouteWithChildren
@@ -99,8 +121,11 @@ export interface FileRoutesByTo {
   '/autenticacao/reset-senha': typeof AutenticacaoResetSenhaRoute
   '/': typeof ProtectedIndexRoute
   '/despesas/nova': typeof ProtectedDespesasNovaRoute
+  '/tags/nova': typeof ProtectedTagsNovaRoute
   '/despesas': typeof ProtectedDespesasIndexRoute
+  '/tags': typeof ProtectedTagsIndexRoute
   '/despesas/$financialRecordId/alterar': typeof ProtectedDespesasFinancialRecordIdAlterarRoute
+  '/tags/$tagId/alterar': typeof ProtectedTagsTagIdAlterarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,8 +138,11 @@ export interface FileRoutesById {
   '/autenticacao/reset-senha': typeof AutenticacaoResetSenhaRoute
   '/_protected/': typeof ProtectedIndexRoute
   '/_protected/despesas/nova': typeof ProtectedDespesasNovaRoute
+  '/_protected/tags/nova': typeof ProtectedTagsNovaRoute
   '/_protected/despesas/': typeof ProtectedDespesasIndexRoute
+  '/_protected/tags/': typeof ProtectedTagsIndexRoute
   '/_protected/despesas/$financialRecordId/alterar': typeof ProtectedDespesasFinancialRecordIdAlterarRoute
+  '/_protected/tags/$tagId/alterar': typeof ProtectedTagsTagIdAlterarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,8 +155,11 @@ export interface FileRouteTypes {
     | '/autenticacao/login'
     | '/autenticacao/reset-senha'
     | '/despesas/nova'
+    | '/tags/nova'
     | '/despesas/'
+    | '/tags/'
     | '/despesas/$financialRecordId/alterar'
+    | '/tags/$tagId/alterar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/autenticacao'
@@ -139,8 +170,11 @@ export interface FileRouteTypes {
     | '/autenticacao/reset-senha'
     | '/'
     | '/despesas/nova'
+    | '/tags/nova'
     | '/despesas'
+    | '/tags'
     | '/despesas/$financialRecordId/alterar'
+    | '/tags/$tagId/alterar'
   id:
     | '__root__'
     | '/_protected'
@@ -152,8 +186,11 @@ export interface FileRouteTypes {
     | '/autenticacao/reset-senha'
     | '/_protected/'
     | '/_protected/despesas/nova'
+    | '/_protected/tags/nova'
     | '/_protected/despesas/'
+    | '/_protected/tags/'
     | '/_protected/despesas/$financialRecordId/alterar'
+    | '/_protected/tags/$tagId/alterar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -233,11 +270,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedDespesasNovaRouteImport
       parentRoute: typeof ProtectedRouteRoute
     }
+    '/_protected/tags/': {
+      id: '/_protected/tags/'
+      path: '/tags'
+      fullPath: '/tags/'
+      preLoaderRoute: typeof ProtectedTagsIndexRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/tags/nova': {
+      id: '/_protected/tags/nova'
+      path: '/tags/nova'
+      fullPath: '/tags/nova'
+      preLoaderRoute: typeof ProtectedTagsNovaRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
     '/_protected/despesas/$financialRecordId/alterar': {
       id: '/_protected/despesas/$financialRecordId/alterar'
       path: '/despesas/$financialRecordId/alterar'
       fullPath: '/despesas/$financialRecordId/alterar'
       preLoaderRoute: typeof ProtectedDespesasFinancialRecordIdAlterarRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/tags/$tagId/alterar': {
+      id: '/_protected/tags/$tagId/alterar'
+      path: '/tags/$tagId/alterar'
+      fullPath: '/tags/$tagId/alterar'
+      preLoaderRoute: typeof ProtectedTagsTagIdAlterarRouteImport
       parentRoute: typeof ProtectedRouteRoute
     }
   }
@@ -247,17 +305,23 @@ interface ProtectedRouteRouteChildren {
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
   ProtectedIndexRoute: typeof ProtectedIndexRoute
   ProtectedDespesasNovaRoute: typeof ProtectedDespesasNovaRoute
+  ProtectedTagsNovaRoute: typeof ProtectedTagsNovaRoute
   ProtectedDespesasIndexRoute: typeof ProtectedDespesasIndexRoute
+  ProtectedTagsIndexRoute: typeof ProtectedTagsIndexRoute
   ProtectedDespesasFinancialRecordIdAlterarRoute: typeof ProtectedDespesasFinancialRecordIdAlterarRoute
+  ProtectedTagsTagIdAlterarRoute: typeof ProtectedTagsTagIdAlterarRoute
 }
 
 const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
   ProtectedDashboardRoute: ProtectedDashboardRoute,
   ProtectedIndexRoute: ProtectedIndexRoute,
   ProtectedDespesasNovaRoute: ProtectedDespesasNovaRoute,
+  ProtectedTagsNovaRoute: ProtectedTagsNovaRoute,
   ProtectedDespesasIndexRoute: ProtectedDespesasIndexRoute,
+  ProtectedTagsIndexRoute: ProtectedTagsIndexRoute,
   ProtectedDespesasFinancialRecordIdAlterarRoute:
     ProtectedDespesasFinancialRecordIdAlterarRoute,
+  ProtectedTagsTagIdAlterarRoute: ProtectedTagsTagIdAlterarRoute,
 }
 
 const ProtectedRouteRouteWithChildren = ProtectedRouteRoute._addFileChildren(

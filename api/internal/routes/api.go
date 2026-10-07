@@ -12,6 +12,7 @@ import (
 func RegisterApiRoutes(router *gin.Engine) {
 	financialRecordController := controllers.NewFinancialRecordController()
 	authController := controllers.NewAuthController()
+	tagController := controllers.NewTagController()
 
 	authenticatedGroup := router.Group("/")
 	authenticatedGroup.Use(middlewares.AuthMiddleware())
@@ -20,6 +21,11 @@ func RegisterApiRoutes(router *gin.Engine) {
 	authenticatedGroup.GET("/financial-record/:id", financialRecordController.View)
 	authenticatedGroup.PUT("/financial-record/:id", financialRecordController.Update)
 	authenticatedGroup.DELETE("/financial-record/:id", financialRecordController.Delete)
+	authenticatedGroup.GET("/tag", tagController.List)
+	authenticatedGroup.POST("/tag", tagController.Store)
+	authenticatedGroup.GET("/tag/:id", tagController.View)
+	authenticatedGroup.PUT("/tag/:id", tagController.Update)
+	authenticatedGroup.DELETE("/tag/:id", tagController.Delete)
 	authenticatedGroup.GET("/me", authController.Me)
 
 	// router.GET("/", (&controllers.HomeController{}).List)

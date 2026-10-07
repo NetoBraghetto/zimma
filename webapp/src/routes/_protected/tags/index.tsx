@@ -8,12 +8,11 @@ import type { TableColumn } from "@/components/app-table";
 import { AppTable } from "@/components/app-table";
 import { DeletionModal } from "@/components/deletion-modal";
 import { PaginationCount } from "@/components/pagination-count";
-import { Badge } from "@/components/ui/badge";
+import { TagBadge } from "@/components/resources/tag/tag-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search } from "@/components/ui/search";
 import { QS_PAGE_INDEX, QS_PER_PAGE_INDEX, QS_SEARCH_INDEX, QS_SORT_INDEX } from "@/constants/querystring";
-import { tagBadgeStyle } from "@/constants/tag";
 import { useListParams } from "@/hooks/use-list-params";
 import { DateTimeFormatter } from "@/lib/datetime-formatter";
 import { cn } from "@/lib/utils";
@@ -55,11 +54,7 @@ function RouteComponent() {
       label: "Nome",
       sortable: true,
       render(item) {
-        return (
-          <Badge size="lg" shape="round" style={tagBadgeStyle(item.color)}>
-            {item.name}
-          </Badge>
-        );
+        return <TagBadge name={item.name} color={item.color} icon={item.icon} />;
       },
     },
     {

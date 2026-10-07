@@ -83,6 +83,8 @@ func (this *TagController) List(c *gin.Context) {
 type saveTag struct {
 	Name  string `json:"name" binding:"required,min=2,max=50"`
 	Color string `json:"color" binding:"required,len=7,hexcolor"`
+	// Key of an icon from the webapp's tag icon list; empty means no icon.
+	Icon string `json:"icon" binding:"omitempty,max=30,alphanum"`
 }
 
 func (this *TagController) Store(c *gin.Context) {
@@ -92,7 +94,7 @@ func (this *TagController) Store(c *gin.Context) {
 		return
 	}
 
-	created := &models.Tag{Name: req.Name, Color: req.Color}
+	created := &models.Tag{Name: req.Name, Color: req.Color, Icon: req.Icon}
 	if err := bootstrap.DB.WithContext(c).Create(created).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -121,6 +123,7 @@ func (this *TagController) Update(c *gin.Context) {
 
 	resource.Name = req.Name
 	resource.Color = req.Color
+	resource.Icon = req.Icon
 	if err := bootstrap.DB.WithContext(c).Save(&resource).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

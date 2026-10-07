@@ -4,6 +4,7 @@ import { type NewResource, RestfulService } from "@/services/restful-service";
 export interface NewTagModel extends NewResource {
   name: string;
   color: string;
+  icon: string;
 }
 
 export interface TagModel extends NewTagModel {

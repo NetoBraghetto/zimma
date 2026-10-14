@@ -3,6 +3,7 @@ package middlewares
 import (
 	"crypto/rsa"
 	"net/http"
+	"strings"
 
 	"zimma/internal/bootstrap"
 	"zimma/internal/config"
@@ -15,12 +16,12 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authorization := c.GetHeader("Authorization")
-		if authorization == "" {
+		token, found := strings.CutPrefix(c.GetHeader("Authorization"), "Bearer ")
+		token = strings.TrimSpace(token)
+		if !found || token == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}
-		token := authorization[len("Bearer "):]
 
 		tokenParsed, err := jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, func(token *jwt.Token) (any, error) {
 			return config.Get[*rsa.PublicKey]("app.verifying_key"), nil

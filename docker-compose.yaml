@@ -59,18 +59,18 @@ services:
       interval: 10s
       timeout: 20s
       retries: 3
-  # mailpit:
-  #   container_name: "${DOCKER_APP}-mailpit"
-  #   image: "axllent/mailpit:latest"
-  #   expose:
-  #     - "1025"
-  #     - "8025"
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.mailpit.rule=Host(`webmail.${APP_DOMAIN}`)"
-  #     - "traefik.http.services.mailpit.loadbalancer.server.port=8025"
-  #   networks:
-  #     - zimma-network
+  mailpit:
+    container_name: "${DOCKER_APP}-mailpit"
+    image: "axllent/mailpit:latest"
+    expose:
+      - "1025"
+      - "8025"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mailpit.rule=Host(`webmail.${APP_DOMAIN}`)"
+      - "traefik.http.services.mailpit.loadbalancer.server.port=8025"
+    networks:
+      - zimma-network
   # swagger:
   #   container_name: "${DOCKER_APP}-swagger"
   #   image: "swaggerapi/swagger-ui:latest"

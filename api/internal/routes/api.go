@@ -37,6 +37,8 @@ func RegisterApiRoutes(router *gin.Engine) {
 	// router.GET("/", (&controllers.HomeController{}).List)
 	router.POST("/auth/register", authController.Register)
 	router.POST("/auth/login", authController.Login)
+	router.POST("/auth/password-recovery", authController.PasswordRecovery)
+	router.POST("/auth/password-reset", authController.PasswordReset)
 
 	router.GET("/up", func(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNoContent)

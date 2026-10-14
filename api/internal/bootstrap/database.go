@@ -17,7 +17,7 @@ import (
 var DB *gorm.DB
 
 func AutoMigrate() {
-	DB.AutoMigrate(&models.User{}, &models.FinancialRecordSerie{}, &models.FinancialRecord{}, &models.Tag{})
+	DB.AutoMigrate(&models.User{}, &models.FinancialRecordSerie{}, &models.FinancialRecord{}, &models.Tag{}, &models.PasswordResetToken{})
 }
 
 func InitDatabase() {

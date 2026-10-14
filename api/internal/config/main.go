@@ -23,9 +23,15 @@ func Load() {
 		log.Printf("failed to parse RSA public key: %v", err)
 	}
 
+	appURL := os.Getenv("APP_URL")
+	if appURL == "" {
+		appURL = "http://" + os.Getenv("APP_DOMAIN")
+	}
+
 	configs = map[string]any{
 		"app": map[string]any{
 			"name":          os.Getenv("APP_NAME"),
+			"url":           strings.TrimRight(appURL, "/"),
 			"env":           os.Getenv("APP_ENV"),
 			"debug":         os.Getenv("APP_DEBUG") == "true",
 			"signing_key":   signKey,
@@ -38,6 +44,13 @@ func Load() {
 			"database": os.Getenv("DB_DATABASE"),
 			"username": os.Getenv("DB_USERNAME"),
 			"password": os.Getenv("DB_PASSWORD"),
+		},
+		"mail": map[string]any{
+			"host":     os.Getenv("MAIL_HOST"),
+			"port":     os.Getenv("MAIL_PORT"),
+			"username": os.Getenv("MAIL_USERNAME"),
+			"password": os.Getenv("MAIL_PASSWORD"),
+			"from":     os.Getenv("MAIL_FROM_ADDRESS"),
 		},
 	}
 }

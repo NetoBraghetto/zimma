@@ -33,3 +33,19 @@ type FinancialRecord struct {
 	UpdatedAt              time.Time             `gorm:"not null" json:"-"`
 	DeletedAt              gorm.DeletedAt        `json:"-"`
 }
+
+func ExpensesOfTheMonth(month *time.Time) func(stmt *gorm.Statement) {
+	return func(stmt *gorm.Statement) {
+		monthStart := time.Date(month.Year(), month.Month(), 1, 0, 0, 0, 0, month.Location())
+		monthEnd := monthStart.AddDate(0, 1, 0)
+		stmt.Where("type = ?", FinancialRecordType.EXPENSE).Where("due_date >= ? AND due_date < ?", monthStart, monthEnd)
+	}
+}
+
+func IncomesOfTheMonth(month *time.Time) func(stmt *gorm.Statement) {
+	return func(stmt *gorm.Statement) {
+		monthStart := time.Date(month.Year(), month.Month(), 1, 0, 0, 0, 0, month.Location())
+		monthEnd := monthStart.AddDate(0, 1, 0)
+		stmt.Where("type = ?", FinancialRecordType.INCOME).Where("due_date >= ? AND due_date < ?", monthStart, monthEnd)
+	}
+}

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"time"
@@ -41,13 +40,10 @@ func (this *FinancialRecordController) List(c *gin.Context) {
 	}
 
 	month, _ := time.Parse("2006-01-02T15:04:05Z07:00", req.Month)
-	monthStart := time.Date(month.Year(), month.Month(), 1, 0, 0, 0, 0, month.Location())
-	monthEnd := monthStart.AddDate(0, 1, 0)
 
-	ctx := context.Background()
 	qs := services.QueryString[models.FinancialRecord]{}
 
-	builder := this.getBuilder().Where("due_date >= ? AND due_date < ?", monthStart, monthEnd)
+	builder := this.getBuilder().Scopes(models.ExpensesOfTheMonth(&month))
 	if req.Type != 0 {
 		builder = builder.Where("type = ?", req.Type)
 	}
@@ -56,13 +52,13 @@ func (this *FinancialRecordController) List(c *gin.Context) {
 		c.DefaultQuery(string(enums.QueryStringParamKeyPage), "1"),
 	)
 	pageSize, _ := strconv.Atoi(
-		c.DefaultQuery(string(enums.QueryStringParamKeyPageSize), "30"),
+		c.DefaultQuery(string(enums.QueryStringParamKeyPageSize), "100"),
 	)
 
 	collection, pagination, err := qs.Paginate(
 		builder.Order("due_date, id").Preload("Serie", nil).Preload("Tags", nil),
 		&services.QueryStringPaginationParams{Page: page, PageSize: pageSize},
-		ctx,
+		c,
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -153,7 +149,6 @@ func (this *FinancialRecordController) Store(c *gin.Context) {
 		return
 	}
 
-	// ctx := context.Background()
 	dueDate, _ := time.Parse("2006-01-02T15:04:05Z07:00", req.DueDate)
 	created := &models.FinancialRecord{
 		Name:    req.Name,
@@ -250,8 +245,7 @@ func (this *FinancialRecordController) Update(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
-	resource, err := this.getBuilder().Where("id", id).Take(ctx)
+	resource, err := this.getBuilder().Where("id", id).Take(c)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "record not found"})

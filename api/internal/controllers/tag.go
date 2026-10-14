@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -47,7 +46,6 @@ func tagOrder(sort string) string {
 }
 
 func (this *TagController) List(c *gin.Context) {
-	ctx := context.Background()
 	qs := services.QueryString[models.Tag]{}
 
 	builder := this.getBuilder().Order(tagOrder(c.Query("$sort")))
@@ -65,7 +63,7 @@ func (this *TagController) List(c *gin.Context) {
 	collection, pagination, err := qs.Paginate(
 		builder,
 		&services.QueryStringPaginationParams{Page: page, PageSize: pageSize},
-		ctx,
+		c,
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -110,8 +108,7 @@ func (this *TagController) Update(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
-	resource, err := this.getBuilder().Where("id", c.Param("id")).Take(ctx)
+	resource, err := this.getBuilder().Where("id", c.Param("id")).Take(c)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "record not found"})

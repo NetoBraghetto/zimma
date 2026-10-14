@@ -13,9 +13,11 @@ func RegisterApiRoutes(router *gin.Engine) {
 	financialRecordController := controllers.NewFinancialRecordController()
 	authController := controllers.NewAuthController()
 	tagController := controllers.NewTagController()
+	homeController := controllers.NewHomeController()
 
 	authenticatedGroup := router.Group("/")
 	authenticatedGroup.Use(middlewares.AuthMiddleware())
+	authenticatedGroup.GET("/dashboard", homeController.Dashboard)
 	authenticatedGroup.GET("/financial-record", financialRecordController.List)
 	authenticatedGroup.POST("/financial-record", financialRecordController.Store)
 	authenticatedGroup.GET("/financial-record/form-dependencies", financialRecordController.FormDependencies)

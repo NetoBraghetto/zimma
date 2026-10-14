@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 
@@ -26,7 +25,6 @@ func (this *RestfulController[T]) getBuilder() gorm.Interface[T] {
 }
 
 func (this *RestfulController[T]) List(c *gin.Context) {
-	ctx := context.Background()
 	qs := services.QueryString[T]{}
 
 	page, _ := strconv.Atoi(
@@ -39,7 +37,7 @@ func (this *RestfulController[T]) List(c *gin.Context) {
 	collection, pagination, err := qs.Paginate(
 		this.getBuilder(),
 		&services.QueryStringPaginationParams{Page: page, PageSize: pageSize},
-		ctx,
+		c,
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -55,9 +53,7 @@ func (this *RestfulController[T]) List(c *gin.Context) {
 }
 
 func (this *RestfulController[T]) View(c *gin.Context) {
-	ctx := context.Background()
-
-	resource, err := this.getBuilder().Where("id", c.Param("id")).Take(ctx)
+	resource, err := this.getBuilder().Where("id", c.Param("id")).Take(c)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
@@ -82,9 +78,7 @@ func (this *RestfulController[T]) Update(c *gin.Context) {
 }
 
 func (this *RestfulController[T]) Delete(c *gin.Context) {
-	ctx := context.Background()
-
-	resource, err := this.getBuilder().Where("id", c.Param("id")).Take(ctx)
+	resource, err := this.getBuilder().Where("id", c.Param("id")).Take(c)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})

@@ -1,17 +1,20 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { addMonths, format, formatISO, isBefore, isValid, parse, startOfDay, startOfMonth } from "date-fns";
+import { addMonths, format, formatISO, isValid, parse, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Decimal from "decimal.js";
 import { useState } from "react";
-import { TbAlertTriangle, TbCheck, TbChevronLeft, TbChevronRight, TbClock, TbDotsVertical, TbEdit, TbPlus, TbTrash } from "react-icons/tb";
+import { TbChevronLeft, TbChevronRight, TbDotsVertical, TbEdit, TbPlus, TbTrash } from "react-icons/tb";
 import { toast } from "sonner";
 import noDataImage from "@/assets/images/undraw_no_data.svg";
 import { ContainerLoading } from "@/components/container-loading";
 import { DeletionModal } from "@/components/deletion-modal";
+import { FinancialRecordStatusBadge } from "@/components/resources/financial-record/status-badge";
+import { TagBadge } from "@/components/resources/tag/tag-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FinancialRecordType } from "@/constants/financial-record";
 import { QS_PAGE_INDEX, QS_PER_PAGE_INDEX } from "@/constants/querystring";
 import { cn } from "@/lib/utils";
@@ -99,13 +102,24 @@ function RouteComponent() {
               <img src={noDataImage} alt="" className="w-40" />
               <p>Nenhuma despesa em {monthLabel}.</p>
             </div>
-          ) : null}
-
-          <ul className="divide-y">
-            {data?.data.map((item) => (
-              <FinancialRecordItem key={item.id} item={item} onDelete={setDeletingItem} />
-            ))}
-          </ul>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="pl-4 sm:pl-6">Despesa</TableHead>
+                  <TableHead>Vencimento</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="w-0" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data?.data.map((item) => (
+                  <FinancialRecordRow key={item.id} item={item} onDelete={setDeletingItem} />
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -133,81 +147,72 @@ function RouteComponent() {
   );
 }
 
-type FinancialRecordItemProps = {
+type FinancialRecordRowProps = {
   item: FinancialRecordModel;
   onDelete: (item: FinancialRecordModel) => void;
 };
 
-function FinancialRecordItem({ item, onDelete }: FinancialRecordItemProps) {
+function FinancialRecordRow({ item, onDelete }: FinancialRecordRowProps) {
   const dueDate = new Date(item.due_date);
-  const isOverdue = !item.confirmed_at && isBefore(dueDate, startOfDay(new Date()));
   const installments = item.serie?.repeat_count ?? 0;
 
   return (
-    <li className="flex items-center gap-4 py-5 pr-2 pl-4 sm:pl-6">
-      <div
-        className={cn(
-          "grid size-12 shrink-0 place-items-center rounded-full",
-          item.confirmed_at
-            ? "bg-emerald-50 text-emerald-600"
-            : isOverdue
-              ? "bg-amber-50 text-amber-500"
-              : "bg-muted text-muted-foreground",
-        )}
-        title={item.confirmed_at ? "Pago" : isOverdue ? "Atrasado" : "Pendente"}
-      >
-        {item.confirmed_at ? (
-          <TbCheck className="size-6" />
-        ) : isOverdue ? (
-          <TbAlertTriangle className="size-6" />
-        ) : (
-          <TbClock className="size-6" />
-        )}
-      </div>
-
-      <div className="min-w-0 flex-1">
+    <TableRow>
+      <TableCell className="w-full max-w-0 pl-4 sm:pl-6">
         <p className="truncate text-lg">
           {item.name}
           {installments > 1 ? (
-            <span className="ml-2">
+            <span className="ml-2 text-muted-foreground">
               {item.installment}/{installments}
             </span>
           ) : null}
         </p>
-      </div>
+        {item.tags?.length ? (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {item.tags.map((tag) => (
+              <TagBadge key={tag.id} name={tag.name} color={tag.color} icon={tag.icon} />
+            ))}
+          </div>
+        ) : null}
+      </TableCell>
 
-      <div className="shrink-0 text-right">
-        <p className="text-sm text-muted-foreground">{format(dueDate, "dd · EEE", { locale: ptBR })}</p>
-        <p className="text-lg">{currencyFormatter.format(Number(item.amount))}</p>
-      </div>
+      <TableCell className="text-sm text-muted-foreground">{format(dueDate, "dd · EEE", { locale: ptBR })}</TableCell>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button variant="ghost" size="icon" className="self-start text-muted-foreground" aria-label="Ações">
-              <TbDotsVertical className="size-5" />
-            </Button>
-          }
-        />
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem
+      <TableCell className="text-right text-lg tabular-nums">{currencyFormatter.format(Number(item.amount))}</TableCell>
+
+      <TableCell>
+        <FinancialRecordStatusBadge item={item} />
+      </TableCell>
+
+      <TableCell className="w-0 pr-2 pl-0">
+        <DropdownMenu>
+          <DropdownMenuTrigger
             render={
-              <Link
-                to="/despesas/$financialRecordId/alterar"
-                params={{ financialRecordId: String(item.id) }}
-                className="cursor-pointer gap-2"
-              >
-                <TbEdit className="size-4" />
-                <span>Alterar</span>
-              </Link>
+              <Button variant="ghost" size="icon" className="text-muted-foreground" aria-label="Ações">
+                <TbDotsVertical className="size-5" />
+              </Button>
             }
           />
-          <DropdownMenuItem className="cursor-pointer gap-2 text-destructive" onClick={() => onDelete(item)}>
-            <TbTrash className="size-4" />
-            <span>Excluir</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </li>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              render={
+                <Link
+                  to="/despesas/$financialRecordId/alterar"
+                  params={{ financialRecordId: String(item.id) }}
+                  className="cursor-pointer gap-2"
+                >
+                  <TbEdit className="size-4" />
+                  <span>Alterar</span>
+                </Link>
+              }
+            />
+            <DropdownMenuItem className="cursor-pointer gap-2 text-destructive" onClick={() => onDelete(item)}>
+              <TbTrash className="size-4" />
+              <span>Excluir</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </TableCell>
+    </TableRow>
   );
 }

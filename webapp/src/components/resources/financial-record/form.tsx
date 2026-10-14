@@ -22,8 +22,15 @@ import {
   FinancialRecordRecurrenceList,
   type FinancialRecordTypeValue,
 } from "@/constants/financial-record";
+import { BRLToDecimal, DecimalToBRL } from "@/lib/currency-formatter";
 import type { SucessServerResponse } from "@/lib/format-success-response";
-import { type FinancialRecordModel, financialRecordService, type NewFinancialRecordModel } from "@/services/financial-record-service";
+import {
+  type FinancialRecordModel,
+  type FinancialRecordSerieModel,
+  financialRecordService,
+  type NewFinancialRecordModel,
+} from "@/services/financial-record-service";
+import type { TagModel } from "@/services/tag-service";
 
 type FinancialRecordFormProps = {
   id?: string;
@@ -31,9 +38,7 @@ type FinancialRecordFormProps = {
   type: FinancialRecordTypeValue;
 };
 
-type FormValues = NewFinancialRecordModel & {
-  tags: { id: number; name: string }[];
-};
+type FormValues = NewFinancialRecordModel;
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -105,12 +110,23 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
   const [recurrenceId, intervalId, value, dueDate, repeatCount, intervalDays] = watch([
     "recurrence_id",
     "interval_id",
-    "value",
+    "amount",
     "due_date",
     "repeat_count",
     "interval_days",
   ]);
-  const [installment, setInstallment] = useState<number | null>(null);
+  const [installment, setInstallment] = useState<{ number: number; serie?: FinancialRecordSerieModel } | null>(null);
+  const [tags, setTags] = useState<TagModel[]>([]);
+
+  useEffect(() => {
+    async function request() {
+      try {
+        const { data } = await financialRecordService.formDependencies();
+        setTags(data.tags);
+      } catch (_error) {}
+    }
+    request();
+  }, []);
 
   useEffect(() => {
     async function request() {
@@ -120,8 +136,8 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
 
       try {
         const { data } = await financialRecordService.show(id);
-        reset(data);
-        setInstallment(data.installment);
+        reset({ ...data, amount: DecimalToBRL(data.amount), tags: data.tags.map((tag) => tag.id) });
+        setInstallment(data.installment ? { number: data.installment, serie: data.serie } : null);
       } catch (_error) {}
     }
     request();
@@ -138,6 +154,7 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
       const isUnique = recurrenceValue === FinancialRecordRecurrence.UNIQUE;
       const payload: FormValues = {
         ...values,
+        amount: BRLToDecimal(values.amount),
         type,
         recurrence_id: recurrenceValue,
         interval_id: isUnique ? null : intervalValue,
@@ -240,6 +257,19 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
     );
   }
 
+  function renderInstallment() {
+    const total = installment?.serie?.repeat_count ?? 0;
+    if (!installment || total < 2) {
+      return null;
+    }
+
+    return (
+      <p className="text-sm text-muted-foreground">
+        Parcela {installment.number} de {total}
+      </p>
+    );
+  }
+
   return (
     <Form onSubmit={handleSubmit(onSubmit)} className="grid w-full items-start gap-6">
       <FieldSet>
@@ -259,9 +289,7 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
           ]}
         />
         {id ? (
-          installment ? (
-            <p className="text-sm text-muted-foreground">Parcela {installment}</p>
-          ) : null
+          renderInstallment()
         ) : (
           <>
             <FormRadioGroup
@@ -277,7 +305,7 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
         )}
         <FormDate label="Vencimento" name="due_date" control={control} error={errors.due_date} />
         <FormCheckbox label="Confirmado" name="confirmed" control={control} />
-        <FormTags label="Tags" name="tags" control={control} options={[]} />
+        <FormTags label="Tags" name="tags" control={control} options={tags} />
         <div className="flex justify-end gap-4">
           <Submit onClick={() => clearErrors()} isLoading={isSubmitting}>
             Salvar

@@ -38,6 +38,10 @@ func InitDatabase() {
 		log.Fatalf("Failed to connect to the database: %v", dbErr)
 	}
 
+	if err := models.RegisterBelongsToUserCallbacks(DB); err != nil {
+		log.Fatalf("Failed to register database callbacks: %v", err)
+	}
+
 	// // Maximum number of open connections to the database.
 	// DB.SetMaxOpenConns(25)
 	// // Maximum number of idle connections retained in the pool.

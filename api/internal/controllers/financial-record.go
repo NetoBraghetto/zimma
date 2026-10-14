@@ -60,7 +60,7 @@ func (this *FinancialRecordController) List(c *gin.Context) {
 	)
 
 	collection, pagination, err := qs.Paginate(
-		builder.Order("due_date, id").Preload("Serie", nil),
+		builder.Order("due_date, id").Preload("Serie", nil).Preload("Tags", nil),
 		&services.QueryStringPaginationParams{Page: page, PageSize: pageSize},
 		ctx,
 	)
@@ -77,6 +77,31 @@ func (this *FinancialRecordController) List(c *gin.Context) {
 	})
 }
 
+// findTags loads the given tags; the belongs_to_user scope restricts them to the authenticated user.
+func findTags(c *gin.Context, tx *gorm.DB, ids []uint64) ([]models.Tag, error) {
+	if len(ids) == 0 {
+		return []models.Tag{}, nil
+	}
+	return gorm.G[models.Tag](tx).Where("id IN ?", ids).Find(c)
+}
+
+func (this *FinancialRecordController) View(c *gin.Context) {
+	resource, err := this.getBuilder().Where("id", c.Param("id")).Preload("Serie", nil).Preload("Tags", nil).Take(c)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": resource,
+		"meta": gin.H{},
+	})
+}
+
 type storeFinancialRecord struct {
 	Name         string          `json:"name" binding:"required,min=3,max=255"`
 	Amount       decimal.Decimal `json:"amount" binding:"required"`
@@ -87,6 +112,7 @@ type storeFinancialRecord struct {
 	IntervalId   *int            `json:"interval_id"`
 	IntervalDays *int            `json:"interval_days"`
 	RepeatCount  *int            `json:"repeat_count"`
+	Tags         []uint64        `json:"tags" binding:"max=20"`
 }
 
 func (this *storeFinancialRecord) hasRepeatCount() bool {
@@ -165,6 +191,11 @@ func (this *FinancialRecordController) Store(c *gin.Context) {
 			return err
 		}
 
+		tags, err := findTags(c, tx, req.Tags)
+		if err != nil {
+			return err
+		}
+
 		total := 1
 		if serie.RepeatCount != nil {
 			total = *serie.RepeatCount
@@ -179,10 +210,12 @@ func (this *FinancialRecordController) Store(c *gin.Context) {
 				DueDate:                serie.OccurrenceDate(i),
 				FinancialRecordSerieId: serie.ID,
 				Installment:            installment,
+				Tags:                   tags,
 			}
 		}
 		occurrences[0].ConfirmedAt = created.ConfirmedAt
-		if err := tx.Create(&occurrences).Error; err != nil {
+		// "Tags.*" only links the existing tags instead of upserting them.
+		if err := tx.Omit("Tags.*").Create(&occurrences).Error; err != nil {
 			return err
 		}
 		*created = occurrences[0]
@@ -201,6 +234,7 @@ type updateFinancialRecord struct {
 	Amount    decimal.Decimal `json:"amount" binding:"required"`
 	DueDate   string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
 	Confirmed *bool           `json:"confirmed" binding:"required,boolean"`
+	Tags      []uint64        `json:"tags" binding:"max=20"`
 }
 
 func (this *FinancialRecordController) Update(c *gin.Context) {
@@ -236,11 +270,38 @@ func (this *FinancialRecordController) Update(c *gin.Context) {
 		t := time.Now()
 		resource.ConfirmedAt = &t
 	}
-	err = bootstrap.DB.Save(resource).Error
+	err = bootstrap.DB.WithContext(c).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Save(&resource).Error; err != nil {
+			return err
+		}
+		tags, err := findTags(c, tx, req.Tags)
+		if err != nil {
+			return err
+		}
+		resource.Tags = tags
+		return tx.Model(&resource).Omit("Tags.*").Association("Tags").Replace(tags)
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": resource})
+}
+
+func (this *FinancialRecordController) FormDependencies(c *gin.Context) {
+	tags, err := gorm.G[models.Tag](bootstrap.DB).
+		Order("name, id").
+		Find(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": gin.H{
+			"tags": tags,
+		},
+		"meta": gin.H{},
+	})
 }

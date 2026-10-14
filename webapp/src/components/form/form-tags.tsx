@@ -1,7 +1,7 @@
 import { type ChangeEvent, type ReactNode, useState } from "react";
 import { type Control, type FieldError, type FieldValues, type Path, useController } from "react-hook-form";
 import { TbPlus, TbX } from "react-icons/tb";
-import { Badge } from "@/components/ui/badge";
+import { TagBadge } from "@/components/resources/tag/tag-badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError as FieldErrorMessage, FieldLabel } from "@/components/ui/field";
@@ -22,9 +22,11 @@ export interface FormTagsProps<F extends FieldValues, O> extends Omit<React.Inpu
 
 function FormTags<
   F extends FieldValues,
-  O extends { id: number | string; name: string } = {
+  O extends { id: number | string; name: string; color?: string; icon?: string } = {
     id: number;
     name: string;
+    color?: string;
+    icon?: string;
   },
 >({
   label,
@@ -117,8 +119,7 @@ function FormTags<
           {selecteds.map((option) => {
             const opValue = getOptionValue(option).toString();
             return (
-              <Badge key={opValue} variant="gray" size="lg">
-                {getOptionLabel(option)}
+              <TagBadge key={opValue} name={getOptionLabel(option)} color={option.color} icon={option.icon}>
                 <button
                   type="button"
                   className="cursor-pointer hover:text-destructive"
@@ -128,7 +129,7 @@ function FormTags<
                 >
                   <TbX />
                 </button>
-              </Badge>
+              </TagBadge>
             );
           })}
         </div>

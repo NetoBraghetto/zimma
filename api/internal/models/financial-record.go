@@ -28,6 +28,7 @@ type FinancialRecord struct {
 	BelongsToUser
 	FinancialRecordSerieId uint64                `gorm:"index" json:"financial_record_serie_id"`
 	Serie                  *FinancialRecordSerie `gorm:"foreignKey:FinancialRecordSerieId" json:"serie,omitempty"`
+	Tags                   []Tag                 `gorm:"many2many:financial_record_tags" json:"tags"`
 	CreatedAt              time.Time             `gorm:"not null" json:"created_at"`
 	UpdatedAt              time.Time             `gorm:"not null" json:"-"`
 	DeletedAt              gorm.DeletedAt        `json:"-"`

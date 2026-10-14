@@ -82,6 +82,7 @@ type importRecord struct {
 	Amount       decimal.Decimal `json:"amount" binding:"required"`
 	Type         int             `json:"type" binding:"required,oneof=1 2"`
 	DueDate      string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	PurchaseDate string          `json:"purchase_date" binding:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
 	Confirmed    *bool           `json:"confirmed" binding:"required,boolean"`
 	Tags         []uint64        `json:"tags" binding:"max=20"`
 	Vendor       string          `json:"vendor" binding:"required,oneof=itau"`
@@ -136,6 +137,11 @@ func (this *ImportController) Store(c *gin.Context) {
 			existing[key][record.VendorId] = true
 
 			dueDate, _ := time.Parse(time.RFC3339, record.DueDate)
+			var purchaseDate *time.Time
+			if record.PurchaseDate != "" {
+				date, _ := time.Parse(time.RFC3339, record.PurchaseDate)
+				purchaseDate = &date
+			}
 			serie := &models.FinancialRecordSerie{
 				Name:         record.Name,
 				Amount:       record.Amount,
@@ -167,6 +173,7 @@ func (this *ImportController) Store(c *gin.Context) {
 				Amount:                 record.Amount,
 				Type:                   record.Type,
 				DueDate:                dueDate,
+				PurchaseDate:           purchaseDate,
 				ConfirmedAt:            confirmedAt,
 				Installment:            1,
 				Vendor:                 &vendor,

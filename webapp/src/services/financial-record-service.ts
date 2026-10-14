@@ -11,6 +11,7 @@ export interface NewFinancialRecordModel extends NewResource {
   name: string;
   amount: string;
   due_date: string;
+  purchase_date: string | null;
   type: FinancialRecordTypeValue;
   confirmed: boolean;
   recurrence_id: FinancialRecordRecurrenceValue;

@@ -81,6 +81,7 @@ type ImportRow = {
   amount: string;
   type: FinancialRecordTypeValue | string;
   due_date: Date | "";
+  purchase_date: Date | "";
   confirmed: boolean;
   tags: number[];
   vendor: string;
@@ -117,6 +118,7 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
         amount: DecimalToBRL(record.amount),
         type: record.type,
         due_date: new Date(record.due_date),
+        purchase_date: record.purchase_date ? new Date(record.purchase_date) : "",
         confirmed: confirmedByDefault,
         tags: record.suggested_tags.map((tag) => tag.id),
         vendor: record.vendor,
@@ -181,6 +183,7 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
         amount: BRLToDecimal(record.amount),
         type: Number(record.type) as FinancialRecordTypeValue,
         due_date: new Date(record.due_date).toISOString(),
+        purchase_date: record.purchase_date ? new Date(record.purchase_date).toISOString() : null,
         confirmed: record.confirmed,
         tags: record.tags.map(Number),
         vendor: record.vendor,
@@ -234,6 +237,7 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
                   <TableHead className="min-w-64">Descrição</TableHead>
                   <TableHead className="min-w-36">Valor</TableHead>
                   <TableHead className="min-w-32">Tipo</TableHead>
+                  <TableHead>Compra</TableHead>
                   <TableHead>Vencimento</TableHead>
                   <TableHead>Confirmado</TableHead>
                   <TableHead className="min-w-56">Tags</TableHead>
@@ -267,6 +271,9 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
                       </TableCell>
                       <TableCell className="align-top">
                         <FormSelect name={`records.${i}.type`} control={control} options={FinancialRecordTypeList} aria-label="Tipo" />
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <FormDate name={`records.${i}.purchase_date`} control={control} />
                       </TableCell>
                       <TableCell className="align-top">
                         <FormDate name={`records.${i}.due_date`} control={control} error={rowErrors?.due_date} />

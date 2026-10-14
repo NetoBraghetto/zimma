@@ -108,6 +108,7 @@ type storeFinancialRecord struct {
 	Amount       decimal.Decimal `json:"amount" binding:"required"`
 	Type         int             `json:"type" binding:"required,oneof=1 2"`
 	DueDate      string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	PurchaseDate string          `json:"purchase_date" binding:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
 	Confirmed    *bool           `json:"confirmed" binding:"required,boolean"`
 	RecurrenceId int             `json:"recurrence_id" binding:"required,oneof=1 2 3 4"`
 	IntervalId   *int            `json:"interval_id"`
@@ -155,6 +156,7 @@ func (this *FinancialRecordController) Store(c *gin.Context) {
 	}
 
 	dueDate, _ := time.Parse("2006-01-02T15:04:05Z07:00", req.DueDate)
+	purchaseDate := parseOptionalDate(req.PurchaseDate)
 	created := &models.FinancialRecord{
 		Name:    req.Name,
 		Amount:  req.Amount,
@@ -204,10 +206,12 @@ func (this *FinancialRecordController) Store(c *gin.Context) {
 		for i := range occurrences {
 			installment := i + 1
 			occurrences[i] = models.FinancialRecord{
-				Name:                   serie.Name,
-				Amount:                 serie.OccurrenceAmount(i),
-				Type:                   serie.Type,
-				DueDate:                serie.OccurrenceDate(i),
+				Name:    serie.Name,
+				Amount:  serie.OccurrenceAmount(i),
+				Type:    serie.Type,
+				DueDate: serie.OccurrenceDate(i),
+				// Every installment comes from the same purchase.
+				PurchaseDate:           purchaseDate,
 				FinancialRecordSerieId: serie.ID,
 				Installment:            installment,
 				Tags:                   tags,
@@ -230,11 +234,12 @@ func (this *FinancialRecordController) Store(c *gin.Context) {
 }
 
 type updateFinancialRecord struct {
-	Name      string          `json:"name" binding:"required,min=3,max=255"`
-	Amount    decimal.Decimal `json:"amount" binding:"required"`
-	DueDate   string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
-	Confirmed *bool           `json:"confirmed" binding:"required,boolean"`
-	Tags      []uint64        `json:"tags" binding:"max=20"`
+	Name         string          `json:"name" binding:"required,min=3,max=255"`
+	Amount       decimal.Decimal `json:"amount" binding:"required"`
+	DueDate      string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	PurchaseDate string          `json:"purchase_date" binding:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
+	Confirmed    *bool           `json:"confirmed" binding:"required,boolean"`
+	Tags         []uint64        `json:"tags" binding:"max=20"`
 }
 
 func (this *FinancialRecordController) Update(c *gin.Context) {
@@ -263,6 +268,7 @@ func (this *FinancialRecordController) Update(c *gin.Context) {
 	resource.Name = req.Name
 	resource.Amount = req.Amount
 	resource.DueDate, _ = time.Parse("2006-01-02T15:04:05Z07:00", req.DueDate)
+	resource.PurchaseDate = parseOptionalDate(req.PurchaseDate)
 	if req.Confirmed == nil || !*req.Confirmed {
 		resource.ConfirmedAt = nil
 	} else {
@@ -286,6 +292,15 @@ func (this *FinancialRecordController) Update(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": resource})
+}
+
+// parseOptionalDate parses an already validated RFC3339 date, returning nil when it is empty.
+func parseOptionalDate(value string) *time.Time {
+	if value == "" {
+		return nil
+	}
+	date, _ := time.Parse(time.RFC3339, value)
+	return &date
 }
 
 func (this *FinancialRecordController) FormDependencies(c *gin.Context) {

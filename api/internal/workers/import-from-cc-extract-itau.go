@@ -110,6 +110,7 @@ func ImportFromCcExtractItau(ctx context.Context, filepath string) ([]ImportedFi
 			Amount:        amount.Abs(),
 			Type:          recordType,
 			DueDate:       invoiceDueDate,
+			PurchaseDate:  purchaseDate,
 			SuggestedTags: []models.Tag{},
 		})
 	}

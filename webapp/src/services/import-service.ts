@@ -17,6 +17,7 @@ export interface ImportedFinancialRecord {
   amount: string;
   type: FinancialRecordTypeValue;
   due_date: string;
+  purchase_date: string;
   suggested_tags: TagModel[];
   already_imported: boolean;
 }
@@ -32,6 +33,7 @@ export interface ImportRecordPayload {
   amount: string;
   type: FinancialRecordTypeValue;
   due_date: string;
+  purchase_date: string | null;
   confirmed: boolean;
   tags: number[];
   vendor: string;

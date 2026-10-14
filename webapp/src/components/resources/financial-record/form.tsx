@@ -99,6 +99,7 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
       name: "",
       amount: "",
       due_date: "",
+      purchase_date: "",
       type,
       confirmed: false,
       recurrence_id: FinancialRecordRecurrence.UNIQUE,
@@ -156,6 +157,7 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
       const payload: FormValues = {
         ...values,
         amount: BRLToDecimal(values.amount),
+        purchase_date: values.purchase_date ? new Date(values.purchase_date).toISOString() : null,
         type,
         recurrence_id: recurrenceValue,
         interval_id: isUnique ? null : intervalValue,
@@ -304,6 +306,7 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
             {renderRecurrenceDescription()}
           </>
         )}
+        <FormDate label="Data da compra" name="purchase_date" control={control} error={errors.purchase_date} />
         <FormDate label="Vencimento" name="due_date" control={control} error={errors.due_date} />
         <FormCheckbox label="Confirmado" name="confirmed" control={control} />
         <FormTags label="Tags" name="tags" control={control} options={tags} />

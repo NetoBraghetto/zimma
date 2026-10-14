@@ -18,13 +18,15 @@ var FinancialRecordType = &TFinancialRecordType{
 }
 
 type FinancialRecord struct {
-	ID          uint64          `gorm:"primaryKey" json:"id"`
-	Name        string          `gorm:"size:255;not null" json:"name"`
-	Amount      decimal.Decimal `gorm:"type:decimal(10,2);not null" json:"amount"`
-	Type        int             `gorm:"type:smallint;not null" json:"type"`
-	DueDate     time.Time       `gorm:"index;not null" json:"due_date"`
-	ConfirmedAt *time.Time      `json:"confirmed_at"`
-	Installment int             `json:"installment"`
+	ID      uint64          `gorm:"primaryKey" json:"id"`
+	Name    string          `gorm:"size:255;not null" json:"name"`
+	Amount  decimal.Decimal `gorm:"type:decimal(10,2);not null" json:"amount"`
+	Type    int             `gorm:"type:smallint;not null" json:"type"`
+	DueDate time.Time       `gorm:"index;not null" json:"due_date"`
+	// When the purchase happened; differs from DueDate for credit card entries, paid with the invoice.
+	PurchaseDate *time.Time `json:"purchase_date"`
+	ConfirmedAt  *time.Time `json:"confirmed_at"`
+	Installment  int        `json:"installment"`
 	// Origin of imported records (bank or credit card statements), used to skip duplicated imports.
 	Vendor       *string `gorm:"size:32;index:idx_financial_record_vendor" json:"vendor"`
 	VendorSource *string `gorm:"size:32;index:idx_financial_record_vendor" json:"vendor_source"`

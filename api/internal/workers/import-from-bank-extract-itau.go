@@ -113,6 +113,7 @@ func (this ofxTransaction) toImportedFinancialRecord() (ImportedFinancialRecord,
 		Amount:        amount.Abs(),
 		Type:          recordType,
 		DueDate:       dueDate,
+		PurchaseDate:  dueDate,
 		SuggestedTags: []models.Tag{},
 	}, nil
 }

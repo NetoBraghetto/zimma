@@ -13,6 +13,7 @@ import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
 import { Route as AutenticacaoRouteRouteImport } from './routes/autenticacao/route'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
+import { Route as ProtectedPerfilRouteImport } from './routes/_protected/perfil'
 import { Route as AutenticacaoCadastreSeRouteImport } from './routes/autenticacao/cadastre-se'
 import { Route as AutenticacaoEsqueciMinhaSenhaRouteImport } from './routes/autenticacao/esqueci-minha-senha'
 import { Route as AutenticacaoLoginRouteImport } from './routes/autenticacao/login'
@@ -44,6 +45,11 @@ const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedPerfilRoute = ProtectedPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
   getParentRoute: () => ProtectedRouteRoute,
 } as any)
 const AutenticacaoCadastreSeRoute = AutenticacaoCadastreSeRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/': typeof ProtectedIndexRoute
   '/autenticacao': typeof AutenticacaoRouteRouteWithChildren
   '/dashboard': typeof ProtectedDashboardRoute
+  '/perfil': typeof ProtectedPerfilRoute
   '/autenticacao/cadastre-se': typeof AutenticacaoCadastreSeRoute
   '/autenticacao/esqueci-minha-senha': typeof AutenticacaoEsqueciMinhaSenhaRoute
   '/autenticacao/login': typeof AutenticacaoLoginRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/autenticacao': typeof AutenticacaoRouteRouteWithChildren
   '/dashboard': typeof ProtectedDashboardRoute
+  '/perfil': typeof ProtectedPerfilRoute
   '/autenticacao/cadastre-se': typeof AutenticacaoCadastreSeRoute
   '/autenticacao/esqueci-minha-senha': typeof AutenticacaoEsqueciMinhaSenhaRoute
   '/autenticacao/login': typeof AutenticacaoLoginRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/_protected': typeof ProtectedRouteRouteWithChildren
   '/autenticacao': typeof AutenticacaoRouteRouteWithChildren
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/_protected/perfil': typeof ProtectedPerfilRoute
   '/autenticacao/cadastre-se': typeof AutenticacaoCadastreSeRoute
   '/autenticacao/esqueci-minha-senha': typeof AutenticacaoEsqueciMinhaSenhaRoute
   '/autenticacao/login': typeof AutenticacaoLoginRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/'
     | '/autenticacao'
     | '/dashboard'
+    | '/perfil'
     | '/autenticacao/cadastre-se'
     | '/autenticacao/esqueci-minha-senha'
     | '/autenticacao/login'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
   to:
     | '/autenticacao'
     | '/dashboard'
+    | '/perfil'
     | '/autenticacao/cadastre-se'
     | '/autenticacao/esqueci-minha-senha'
     | '/autenticacao/login'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/_protected'
     | '/autenticacao'
     | '/_protected/dashboard'
+    | '/_protected/perfil'
     | '/autenticacao/cadastre-se'
     | '/autenticacao/esqueci-minha-senha'
     | '/autenticacao/login'
@@ -263,6 +275,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof ProtectedDashboardRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/perfil': {
+      id: '/_protected/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof ProtectedPerfilRouteImport
       parentRoute: typeof ProtectedRouteRoute
     }
     '/autenticacao/cadastre-se': {
@@ -361,6 +380,7 @@ declare module '@tanstack/react-router' {
 
 interface ProtectedRouteRouteChildren {
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+  ProtectedPerfilRoute: typeof ProtectedPerfilRoute
   ProtectedIndexRoute: typeof ProtectedIndexRoute
   ProtectedDespesasNovaRoute: typeof ProtectedDespesasNovaRoute
   ProtectedReceitasNovaRoute: typeof ProtectedReceitasNovaRoute
@@ -375,6 +395,7 @@ interface ProtectedRouteRouteChildren {
 
 const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
   ProtectedDashboardRoute: ProtectedDashboardRoute,
+  ProtectedPerfilRoute: ProtectedPerfilRoute,
   ProtectedIndexRoute: ProtectedIndexRoute,
   ProtectedDespesasNovaRoute: ProtectedDespesasNovaRoute,
   ProtectedReceitasNovaRoute: ProtectedReceitasNovaRoute,

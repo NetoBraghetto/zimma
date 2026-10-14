@@ -32,8 +32,6 @@ export type AuthModel = {
   id: number;
   name: string;
   email: string;
-  permissions: string[];
-  roles: string[];
   mfa_enabled: boolean;
 };
 

@@ -104,7 +104,7 @@ func ImportFromCcExtractItau(ctx context.Context, filepath string) ([]ImportedFi
 		records = append(records, ImportedFinancialRecord{
 			Vendor:        enums.Vendor.ITAU,
 			VendorId:      hex.EncodeToString(hash[:]),
-			VendorSource:  "cc-extract",
+			VendorSource:  ImportSourceItauCcExtract,
 			VendorName:    vendorName,
 			Name:          name,
 			Amount:        amount.Abs(),
@@ -115,6 +115,9 @@ func ImportFromCcExtractItau(ctx context.Context, filepath string) ([]ImportedFi
 	}
 
 	if err := suggestTags(ctx, records); err != nil {
+		return nil, err
+	}
+	if err := markAlreadyImported(ctx, records); err != nil {
 		return nil, err
 	}
 	return records, nil

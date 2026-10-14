@@ -32,6 +32,10 @@ export interface FinancialRecordModel extends Omit<NewFinancialRecordModel, "tag
   readonly installment: number | null;
   readonly amount: string;
   readonly confirmed_at: string | null;
+  readonly vendor: string | null;
+  readonly vendor_source: string | null;
+  readonly vendor_id: string | null;
+  readonly vendor_name: string | null;
   readonly serie?: FinancialRecordSerieModel;
   readonly tags: TagModel[];
   readonly created_at: SqlDateTimeFormat;

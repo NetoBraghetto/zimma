@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { ImportButton } from "@/components/resources/import/import-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import Config from "@/services/config-service";
 import { Avatar, AvatarFallback } from "../ui/avatar";
@@ -17,6 +18,7 @@ export function Header() {
         {/* <span className="text-base font-semibold tracking-tight text-primary">Dashboard Overview</span> */}
       </div>
       <div className="flex items-center gap-3">
+        <ImportButton />
         {user ? (
           <Avatar>
             <AvatarFallback>{user.name?.[0] ?? user.email[0]}</AvatarFallback>

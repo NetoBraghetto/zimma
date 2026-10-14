@@ -49,6 +49,9 @@ func ImportFromBankExtractItau(ctx context.Context, filepath string) ([]Imported
 	if err := suggestTags(ctx, records); err != nil {
 		return nil, err
 	}
+	if err := markAlreadyImported(ctx, records); err != nil {
+		return nil, err
+	}
 	return records, nil
 }
 
@@ -104,7 +107,7 @@ func (this ofxTransaction) toImportedFinancialRecord() (ImportedFinancialRecord,
 	return ImportedFinancialRecord{
 		Vendor:        enums.Vendor.ITAU,
 		VendorId:      this["FITID"],
-		VendorSource:  "bank-extract",
+		VendorSource:  ImportSourceItauBankExtract,
 		VendorName:    name,
 		Name:          name,
 		Amount:        amount.Abs(),

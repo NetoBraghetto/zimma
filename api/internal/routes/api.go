@@ -14,6 +14,7 @@ func RegisterApiRoutes(router *gin.Engine) {
 	authController := controllers.NewAuthController()
 	tagController := controllers.NewTagController()
 	homeController := controllers.NewHomeController()
+	importController := controllers.NewImportController()
 
 	authenticatedGroup := router.Group("/")
 	authenticatedGroup.Use(middlewares.AuthMiddleware())
@@ -29,6 +30,8 @@ func RegisterApiRoutes(router *gin.Engine) {
 	authenticatedGroup.GET("/tag/:id", tagController.View)
 	authenticatedGroup.PUT("/tag/:id", tagController.Update)
 	authenticatedGroup.DELETE("/tag/:id", tagController.Delete)
+	authenticatedGroup.POST("/import/preview", importController.Preview)
+	authenticatedGroup.POST("/import", importController.Store)
 	authenticatedGroup.GET("/me", authController.Me)
 
 	// router.GET("/", (&controllers.HomeController{}).List)

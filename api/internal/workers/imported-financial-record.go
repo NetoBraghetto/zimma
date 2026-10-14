@@ -27,6 +27,8 @@ type ImportedFinancialRecord struct {
 	Type          int             `json:"type"`
 	DueDate       time.Time       `json:"due_date"`
 	SuggestedTags []models.Tag    `json:"suggested_tags"`
+	// True when a record with the same vendor id was already imported by the user.
+	AlreadyImported bool `json:"already_imported"`
 }
 
 // Maximum number of tags suggested for each imported record.

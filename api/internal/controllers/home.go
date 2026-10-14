@@ -32,7 +32,7 @@ func (this *HomeController) Dashboard(c *gin.Context) {
 	month, _ := time.Parse("2006-01-02T15:04:05Z07:00", req.Month)
 	expenses, err := gorm.G[models.FinancialRecord](bootstrap.DB).
 		Scopes(models.ExpensesOfTheMonth(&month)).
-		// Order("due_date, id").
+		Preload("Tags", nil).
 		Find(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -40,7 +40,7 @@ func (this *HomeController) Dashboard(c *gin.Context) {
 	}
 	incomes, err := gorm.G[models.FinancialRecord](bootstrap.DB).
 		Scopes(models.IncomesOfTheMonth(&month)).
-		// Order("due_date, id").
+		Preload("Tags", nil).
 		Find(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

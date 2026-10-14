@@ -1,12 +1,16 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { TbArrowRight, TbLock, TbMail } from "react-icons/tb";
 import { toast } from "sonner";
 import { Form } from "@/components/form/form";
 import { FormErrors } from "@/components/form/form-errors";
-import { FormPassword } from "@/components/form/form-password";
-import { FormText } from "@/components/form/form-text";
+import { FormGroupPassword } from "@/components/form/form-group-password";
+import { FormGroupText } from "@/components/form/form-group-text";
 import { Submit } from "@/components/form/submit";
+import { AuthCard } from "@/components/layout/auth-card";
+import { buttonVariants } from "@/components/ui/button";
+import { FieldGroup } from "@/components/ui/field";
 import { authService } from "@/services/auth-service";
 
 export const Route = createFileRoute("/autenticacao/reset-senha")({
@@ -15,7 +19,7 @@ export const Route = createFileRoute("/autenticacao/reset-senha")({
   }),
   beforeLoad: async ({ search }) => {
     if (!search.token) {
-      throw redirect({ to: "/autenticacao/login" });
+      throw redirect({ to: "/autenticacao/login", search: { redirect: "/" } });
     }
   },
   component: RouteComponent,
@@ -55,7 +59,7 @@ function RouteComponent() {
       toast.success("Senha redefinida com sucesso", {
         description: "Você pode agora fazer login com sua nova senha.",
       });
-      navigate({ to: "/autenticacao/login" });
+      navigate({ to: "/autenticacao/login", search: { redirect: "/" } });
     } catch (err) {
       FormErrors(err, setError);
     }
@@ -63,34 +67,61 @@ function RouteComponent() {
   }
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)} className="mx-auto grid w-87.5 gap-6">
-      <div className="grid gap-2">
-        <h1 className="text-3xl font-bold">Redefinir senha</h1>
-      </div>
-      <div className="grid gap-4">
-        <FormText
-          label="E-mail"
-          name="email"
-          type="email"
-          control={control}
-          error={errors.email}
-          placeholder="email@example.com"
-          autoComplete="username"
-        />
-        <FormPassword label="Senha" name="password" control={control} error={errors.password} autoComplete="new-password" />
-        <FormPassword
-          label="Confirmação da nova senha"
-          name="password_confirmation"
-          control={control}
-          error={errors.password_confirmation}
-          autoComplete="new-password"
-        />
-        <div className="grid gap-2">
+    <Form onSubmit={handleSubmit(onSubmit)} className="flex min-h-dvh items-center justify-center p-6">
+      <AuthCard
+        description="Crie uma nova senha para sua conta"
+        footer={
+          <Link to="/autenticacao/login" search={{ redirect: "/" }} className={buttonVariants({ variant: "link", size: "sm" })}>
+            Voltar para o login
+          </Link>
+        }
+      >
+        <FieldGroup className="gap-4">
+          <FormGroupText
+            label="Email"
+            name="email"
+            type="email"
+            control={control}
+            error={errors.email}
+            placeholder="email@example.com"
+            autoComplete="username"
+            autoFocus
+            addons={[
+              <div key="mail-addon" className="px-2">
+                <TbMail />
+              </div>,
+            ]}
+          />
+          <FormGroupPassword
+            label="Nova senha"
+            name="password"
+            control={control}
+            error={errors.password}
+            autoComplete="new-password"
+            addons={[
+              <div key="lock-addon" className="px-2">
+                <TbLock />
+              </div>,
+            ]}
+          />
+          <FormGroupPassword
+            label="Confirme a nova senha"
+            name="password_confirmation"
+            control={control}
+            error={errors.password_confirmation}
+            autoComplete="new-password"
+            addons={[
+              <div key="lock-confirmation-addon" className="px-2">
+                <TbLock />
+              </div>,
+            ]}
+          />
+
           <Submit isLoading={isLoading} className="w-full">
-            Redefinir senha
+            Redefinir senha <TbArrowRight />
           </Submit>
-        </div>
-      </div>
+        </FieldGroup>
+      </AuthCard>
     </Form>
   );
 }

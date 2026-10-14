@@ -1,10 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { TbArrowRight, TbMail } from "react-icons/tb";
 import { toast } from "sonner";
 import { Form } from "@/components/form/form";
-import { FormText } from "@/components/form/form-text";
+import { FormGroupText } from "@/components/form/form-group-text";
 import { Submit } from "@/components/form/submit";
+import { AuthCard } from "@/components/layout/auth-card";
+import { buttonVariants } from "@/components/ui/button";
+import { FieldGroup } from "@/components/ui/field";
 import { authService } from "@/services/auth-service";
 
 export const Route = createFileRoute("/autenticacao/esqueci-minha-senha")({
@@ -39,35 +43,46 @@ function RouteComponent() {
       toast.success("Solicitação enviada", {
         description: "Verifique seu e-mail para prosseguir.",
       });
-      navigate({ to: "/autenticacao/login" });
+      navigate({ to: "/autenticacao/login", search: { redirect: "/" } });
     } catch (_err) {}
     setIsLoading(false);
   }
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)} className="mx-auto grid w-87.5 gap-6">
-      <div className="grid gap-2">
-        <h1 className="text-3xl font-bold">Esqueci minha senha</h1>
-      </div>
-      <div className="grid gap-4">
-        <FormText
-          label="E-mail"
-          name="email"
-          type="email"
-          control={control}
-          error={errors.email}
-          placeholder="email@example.com"
-          autoComplete="username"
-        />
-        <div className="grid gap-2">
+    <Form onSubmit={handleSubmit(onSubmit)} className="flex min-h-dvh items-center justify-center p-6">
+      <AuthCard
+        description="Informe seu e-mail para receber o link de redefinição de senha"
+        footer={
+          <>
+            Lembrou a senha?{" "}
+            <Link to="/autenticacao/login" search={{ redirect: "/" }} className={buttonVariants({ variant: "link", size: "sm" })}>
+              Voltar para o login
+            </Link>
+          </>
+        }
+      >
+        <FieldGroup className="gap-4">
+          <FormGroupText
+            label="Email"
+            name="email"
+            type="email"
+            control={control}
+            error={errors.email}
+            placeholder="email@example.com"
+            autoComplete="username"
+            autoFocus
+            addons={[
+              <div key="mail-addon" className="px-2">
+                <TbMail />
+              </div>,
+            ]}
+          />
+
           <Submit isLoading={isLoading} className="w-full">
-            Solicitar reset de senha
+            Enviar link <TbArrowRight />
           </Submit>
-        </div>
-        <Link to="/autenticacao/login" className="ml-auto inline-block text-sm underline">
-          Voltar para login
-        </Link>
-      </div>
+        </FieldGroup>
+      </AuthCard>
     </Form>
   );
 }

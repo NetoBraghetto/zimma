@@ -40,10 +40,15 @@ func (this *FinancialRecordController) List(c *gin.Context) {
 	}
 
 	month, _ := time.Parse("2006-01-02T15:04:05Z07:00", req.Month)
+	nextMonth := time.Date(month.Year(), month.Month()+1, 1, 0, 0, 0, 0, month.Location())
+	if err := services.MaterializeRecurringSeries(c, bootstrap.DB, nextMonth); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	qs := services.QueryString[models.FinancialRecord]{}
 
-	builder := this.getBuilder().Scopes(models.ExpensesOfTheMonth(&month))
+	builder := this.getBuilder().Scopes(models.OfTheMonth(&month))
 	if req.Type != 0 {
 		builder = builder.Where("type = ?", req.Type)
 	}

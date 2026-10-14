@@ -12,6 +12,7 @@ import { FormSelect } from "@/components/form/form-select";
 import { FormTags } from "@/components/form/form-tags";
 import { FormText } from "@/components/form/form-text";
 import { Submit } from "@/components/form/submit";
+import { FinancialRecordTypeConfig } from "@/components/resources/financial-record/list";
 import { FieldLegend, FieldSet } from "@/components/ui/field";
 import { CleaveBRLOptions } from "@/constants/cleave-masks";
 import {
@@ -273,7 +274,7 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
   return (
     <Form onSubmit={handleSubmit(onSubmit)} className="grid w-full items-start gap-6">
       <FieldSet>
-        <FieldLegend className="text-expense">Despesa</FieldLegend>
+        <FieldLegend className={FinancialRecordTypeConfig[type].textClassName}>{FinancialRecordTypeConfig[type].label}</FieldLegend>
         <FormText label="Descrição" name="name" error={errors.name} control={control} />
         <FormGroupMasked
           label="Valor"

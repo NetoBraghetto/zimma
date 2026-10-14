@@ -24,10 +24,14 @@ export function FloatingActionButton() {
               </Link>
             }
           ></DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer gap-2 py-2" onClick={() => console.log("Income clicked")}>
-            <TbTrendingUp className="h-4 w-4 text-emerald-500" />
-            <span>Receita</span>
-          </DropdownMenuItem>
+          <DropdownMenuItem
+            render={
+              <Link to="/receitas/nova" className="cursor-pointer gap-2 py-2">
+                <TbTrendingUp className="h-4 w-4 text-emerald-500" />
+                <span>Receita</span>
+              </Link>
+            }
+          ></DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

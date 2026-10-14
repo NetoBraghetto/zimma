@@ -19,9 +19,12 @@ import { Route as AutenticacaoLoginRouteImport } from './routes/autenticacao/log
 import { Route as AutenticacaoResetSenhaRouteImport } from './routes/autenticacao/reset-senha'
 import { Route as ProtectedDespesasIndexRouteImport } from './routes/_protected/despesas/index'
 import { Route as ProtectedDespesasNovaRouteImport } from './routes/_protected/despesas/nova'
+import { Route as ProtectedReceitasIndexRouteImport } from './routes/_protected/receitas/index'
+import { Route as ProtectedReceitasNovaRouteImport } from './routes/_protected/receitas/nova'
 import { Route as ProtectedTagsIndexRouteImport } from './routes/_protected/tags/index'
 import { Route as ProtectedTagsNovaRouteImport } from './routes/_protected/tags/nova'
 import { Route as ProtectedDespesasFinancialRecordIdAlterarRouteImport } from './routes/_protected/despesas/$financialRecordId/alterar'
+import { Route as ProtectedReceitasFinancialRecordIdAlterarRouteImport } from './routes/_protected/receitas/$financialRecordId/alterar'
 import { Route as ProtectedTagsTagIdAlterarRouteImport } from './routes/_protected/tags/$tagId/alterar'
 
 const ProtectedRouteRoute = ProtectedRouteRouteImport.update({
@@ -74,6 +77,16 @@ const ProtectedDespesasNovaRoute = ProtectedDespesasNovaRouteImport.update({
   path: '/despesas/nova',
   getParentRoute: () => ProtectedRouteRoute,
 } as any)
+const ProtectedReceitasIndexRoute = ProtectedReceitasIndexRouteImport.update({
+  id: '/receitas/',
+  path: '/receitas/',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedReceitasNovaRoute = ProtectedReceitasNovaRouteImport.update({
+  id: '/receitas/nova',
+  path: '/receitas/nova',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
 const ProtectedTagsIndexRoute = ProtectedTagsIndexRouteImport.update({
   id: '/tags/',
   path: '/tags/',
@@ -88,6 +101,12 @@ const ProtectedDespesasFinancialRecordIdAlterarRoute =
   ProtectedDespesasFinancialRecordIdAlterarRouteImport.update({
     id: '/despesas/$financialRecordId/alterar',
     path: '/despesas/$financialRecordId/alterar',
+    getParentRoute: () => ProtectedRouteRoute,
+  } as any)
+const ProtectedReceitasFinancialRecordIdAlterarRoute =
+  ProtectedReceitasFinancialRecordIdAlterarRouteImport.update({
+    id: '/receitas/$financialRecordId/alterar',
+    path: '/receitas/$financialRecordId/alterar',
     getParentRoute: () => ProtectedRouteRoute,
   } as any)
 const ProtectedTagsTagIdAlterarRoute =
@@ -106,10 +125,13 @@ export interface FileRoutesByFullPath {
   '/autenticacao/login': typeof AutenticacaoLoginRoute
   '/autenticacao/reset-senha': typeof AutenticacaoResetSenhaRoute
   '/despesas/nova': typeof ProtectedDespesasNovaRoute
+  '/receitas/nova': typeof ProtectedReceitasNovaRoute
   '/tags/nova': typeof ProtectedTagsNovaRoute
   '/despesas/': typeof ProtectedDespesasIndexRoute
+  '/receitas/': typeof ProtectedReceitasIndexRoute
   '/tags/': typeof ProtectedTagsIndexRoute
   '/despesas/$financialRecordId/alterar': typeof ProtectedDespesasFinancialRecordIdAlterarRoute
+  '/receitas/$financialRecordId/alterar': typeof ProtectedReceitasFinancialRecordIdAlterarRoute
   '/tags/$tagId/alterar': typeof ProtectedTagsTagIdAlterarRoute
 }
 export interface FileRoutesByTo {
@@ -121,10 +143,13 @@ export interface FileRoutesByTo {
   '/autenticacao/reset-senha': typeof AutenticacaoResetSenhaRoute
   '/': typeof ProtectedIndexRoute
   '/despesas/nova': typeof ProtectedDespesasNovaRoute
+  '/receitas/nova': typeof ProtectedReceitasNovaRoute
   '/tags/nova': typeof ProtectedTagsNovaRoute
   '/despesas': typeof ProtectedDespesasIndexRoute
+  '/receitas': typeof ProtectedReceitasIndexRoute
   '/tags': typeof ProtectedTagsIndexRoute
   '/despesas/$financialRecordId/alterar': typeof ProtectedDespesasFinancialRecordIdAlterarRoute
+  '/receitas/$financialRecordId/alterar': typeof ProtectedReceitasFinancialRecordIdAlterarRoute
   '/tags/$tagId/alterar': typeof ProtectedTagsTagIdAlterarRoute
 }
 export interface FileRoutesById {
@@ -138,10 +163,13 @@ export interface FileRoutesById {
   '/autenticacao/reset-senha': typeof AutenticacaoResetSenhaRoute
   '/_protected/': typeof ProtectedIndexRoute
   '/_protected/despesas/nova': typeof ProtectedDespesasNovaRoute
+  '/_protected/receitas/nova': typeof ProtectedReceitasNovaRoute
   '/_protected/tags/nova': typeof ProtectedTagsNovaRoute
   '/_protected/despesas/': typeof ProtectedDespesasIndexRoute
+  '/_protected/receitas/': typeof ProtectedReceitasIndexRoute
   '/_protected/tags/': typeof ProtectedTagsIndexRoute
   '/_protected/despesas/$financialRecordId/alterar': typeof ProtectedDespesasFinancialRecordIdAlterarRoute
+  '/_protected/receitas/$financialRecordId/alterar': typeof ProtectedReceitasFinancialRecordIdAlterarRoute
   '/_protected/tags/$tagId/alterar': typeof ProtectedTagsTagIdAlterarRoute
 }
 export interface FileRouteTypes {
@@ -155,10 +183,13 @@ export interface FileRouteTypes {
     | '/autenticacao/login'
     | '/autenticacao/reset-senha'
     | '/despesas/nova'
+    | '/receitas/nova'
     | '/tags/nova'
     | '/despesas/'
+    | '/receitas/'
     | '/tags/'
     | '/despesas/$financialRecordId/alterar'
+    | '/receitas/$financialRecordId/alterar'
     | '/tags/$tagId/alterar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -170,10 +201,13 @@ export interface FileRouteTypes {
     | '/autenticacao/reset-senha'
     | '/'
     | '/despesas/nova'
+    | '/receitas/nova'
     | '/tags/nova'
     | '/despesas'
+    | '/receitas'
     | '/tags'
     | '/despesas/$financialRecordId/alterar'
+    | '/receitas/$financialRecordId/alterar'
     | '/tags/$tagId/alterar'
   id:
     | '__root__'
@@ -186,10 +220,13 @@ export interface FileRouteTypes {
     | '/autenticacao/reset-senha'
     | '/_protected/'
     | '/_protected/despesas/nova'
+    | '/_protected/receitas/nova'
     | '/_protected/tags/nova'
     | '/_protected/despesas/'
+    | '/_protected/receitas/'
     | '/_protected/tags/'
     | '/_protected/despesas/$financialRecordId/alterar'
+    | '/_protected/receitas/$financialRecordId/alterar'
     | '/_protected/tags/$tagId/alterar'
   fileRoutesById: FileRoutesById
 }
@@ -270,6 +307,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedDespesasNovaRouteImport
       parentRoute: typeof ProtectedRouteRoute
     }
+    '/_protected/receitas/': {
+      id: '/_protected/receitas/'
+      path: '/receitas'
+      fullPath: '/receitas/'
+      preLoaderRoute: typeof ProtectedReceitasIndexRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/receitas/nova': {
+      id: '/_protected/receitas/nova'
+      path: '/receitas/nova'
+      fullPath: '/receitas/nova'
+      preLoaderRoute: typeof ProtectedReceitasNovaRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
     '/_protected/tags/': {
       id: '/_protected/tags/'
       path: '/tags'
@@ -291,6 +342,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedDespesasFinancialRecordIdAlterarRouteImport
       parentRoute: typeof ProtectedRouteRoute
     }
+    '/_protected/receitas/$financialRecordId/alterar': {
+      id: '/_protected/receitas/$financialRecordId/alterar'
+      path: '/receitas/$financialRecordId/alterar'
+      fullPath: '/receitas/$financialRecordId/alterar'
+      preLoaderRoute: typeof ProtectedReceitasFinancialRecordIdAlterarRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
     '/_protected/tags/$tagId/alterar': {
       id: '/_protected/tags/$tagId/alterar'
       path: '/tags/$tagId/alterar'
@@ -305,10 +363,13 @@ interface ProtectedRouteRouteChildren {
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
   ProtectedIndexRoute: typeof ProtectedIndexRoute
   ProtectedDespesasNovaRoute: typeof ProtectedDespesasNovaRoute
+  ProtectedReceitasNovaRoute: typeof ProtectedReceitasNovaRoute
   ProtectedTagsNovaRoute: typeof ProtectedTagsNovaRoute
   ProtectedDespesasIndexRoute: typeof ProtectedDespesasIndexRoute
+  ProtectedReceitasIndexRoute: typeof ProtectedReceitasIndexRoute
   ProtectedTagsIndexRoute: typeof ProtectedTagsIndexRoute
   ProtectedDespesasFinancialRecordIdAlterarRoute: typeof ProtectedDespesasFinancialRecordIdAlterarRoute
+  ProtectedReceitasFinancialRecordIdAlterarRoute: typeof ProtectedReceitasFinancialRecordIdAlterarRoute
   ProtectedTagsTagIdAlterarRoute: typeof ProtectedTagsTagIdAlterarRoute
 }
 
@@ -316,11 +377,15 @@ const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
   ProtectedDashboardRoute: ProtectedDashboardRoute,
   ProtectedIndexRoute: ProtectedIndexRoute,
   ProtectedDespesasNovaRoute: ProtectedDespesasNovaRoute,
+  ProtectedReceitasNovaRoute: ProtectedReceitasNovaRoute,
   ProtectedTagsNovaRoute: ProtectedTagsNovaRoute,
   ProtectedDespesasIndexRoute: ProtectedDespesasIndexRoute,
+  ProtectedReceitasIndexRoute: ProtectedReceitasIndexRoute,
   ProtectedTagsIndexRoute: ProtectedTagsIndexRoute,
   ProtectedDespesasFinancialRecordIdAlterarRoute:
     ProtectedDespesasFinancialRecordIdAlterarRoute,
+  ProtectedReceitasFinancialRecordIdAlterarRoute:
+    ProtectedReceitasFinancialRecordIdAlterarRoute,
   ProtectedTagsTagIdAlterarRoute: ProtectedTagsTagIdAlterarRoute,
 }
 

@@ -2,12 +2,12 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import type { IconType } from "react-icons";
-import { TbLayoutDashboard, TbMenu2, TbTag, TbTrendingDown, TbX } from "react-icons/tb";
+import { TbLayoutDashboard, TbMenu2, TbTag, TbTrendingDown, TbTrendingUp, TbX } from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import Config from "@/services/config-service";
 
 type MenuItem = {
-  to: "/dashboard" | "/despesas" | "/tags";
+  to: "/dashboard" | "/despesas" | "/receitas" | "/tags";
   label: string;
   icon: IconType;
 };
@@ -15,6 +15,7 @@ type MenuItem = {
 const menuItems: MenuItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: TbLayoutDashboard },
   { to: "/despesas", label: "Despesas", icon: TbTrendingDown },
+  { to: "/receitas", label: "Receitas", icon: TbTrendingUp },
   { to: "/tags", label: "Tags", icon: TbTag },
 ];
 

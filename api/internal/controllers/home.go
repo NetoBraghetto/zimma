@@ -6,6 +6,7 @@ import (
 
 	"zimma/internal/bootstrap"
 	"zimma/internal/models"
+	"zimma/internal/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
@@ -30,6 +31,11 @@ func (this *HomeController) Dashboard(c *gin.Context) {
 	}
 
 	month, _ := time.Parse("2006-01-02T15:04:05Z07:00", req.Month)
+	nextMonth := time.Date(month.Year(), month.Month()+1, 1, 0, 0, 0, 0, month.Location())
+	if err := services.MaterializeRecurringSeries(c, bootstrap.DB, nextMonth); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	expenses, err := gorm.G[models.FinancialRecord](bootstrap.DB).
 		Scopes(models.ExpensesOfTheMonth(&month)).
 		Preload("Tags", nil).

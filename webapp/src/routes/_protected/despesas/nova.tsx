@@ -17,7 +17,7 @@ function RouteComponent() {
       <FinancialRecordForm
         type={FinancialRecordType.EXPENSE}
         onSave={() => {
-          toast.success("Despesa criado!");
+          toast.success("Despesa criada!");
           navigate({ to: `/despesas` });
         }}
       />

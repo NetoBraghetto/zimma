@@ -3,9 +3,10 @@ import { type Control, type FieldError, type FieldValues, type Path, useControll
 import { TbPlus, TbX } from "react-icons/tb";
 import { TagBadge } from "@/components/resources/tag/tag-badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError as FieldErrorMessage, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { TagForm } from "../resources/tag/form";
 
 export interface FormTagsProps<F extends FieldValues, O> extends Omit<React.InputHTMLAttributes<HTMLSelectElement>, "value" | "onChange"> {
   label?: string;
@@ -107,10 +108,9 @@ function FormTags<
           <Button type="button" variant="outline" size="icon" disabled={disabled} onClick={() => setIsModalOpen(true)} aria-label="Novo">
             <TbPlus />
           </Button>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Novo</DialogTitle>
-            </DialogHeader>
+          {/* component tree: stop the tag form submit from reaching the form that hosts this field. */}
+          <DialogContent onSubmit={(e) => e.stopPropagation()}>
+            <TagForm onSave={() => setIsModalOpen(false)} />
           </DialogContent>
         </Dialog>
       </div>

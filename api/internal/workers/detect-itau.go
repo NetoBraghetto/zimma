@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"regexp"
 	"strings"
 
 	"zimma/internal/bootstrap"
@@ -13,20 +14,31 @@ import (
 )
 
 const (
-	ImportSourceItauBankExtract = "itau-bank-extract"
-	ImportSourceItauCcExtract   = "itau-cc-extract"
+	ImportSourceItauBankExtract  = "itau-bank-extract"
+	ImportSourceItauCcExtract    = "itau-cc-extract"
+	ImportSourceInterBankExtract = "inter-bank-extract"
+	ImportSourceInterCcExtract   = "inter-cc-extract"
+	ImportSourceNubankCcExtract  = "nubank-cc-extract"
 )
 
 // ImportSourceLabels are the user facing names of the supported statements.
 var ImportSourceLabels = map[string]string{
-	ImportSourceItauBankExtract: "Extrato Bancário ITAU",
-	ImportSourceItauCcExtract:   "Extrato de Cartão de Crédito ITAU",
+	ImportSourceItauBankExtract:  "Extrato Bancário ITAU",
+	ImportSourceItauCcExtract:    "Extrato de Cartão de Crédito ITAU",
+	ImportSourceInterBankExtract: "Extrato Bancário INTER",
+	ImportSourceInterCcExtract:   "Fatura de Cartão de Crédito INTER",
+	ImportSourceNubankCcExtract:  "Fatura de Cartão de Crédito NUBANK",
 }
 
 var ErrUnsupportedImportFile = errors.New("unsupported import file")
 
-// Itaú's bank code, present in the <BANKID> of its OFX statements.
-const itauBankId = "0341"
+// Bank codes present in the <BANKID> of the OFX statements, without leading zeros.
+const (
+	itauBankId  = "341"
+	interBankId = "77"
+)
+
+var ofxBankIdTag = regexp.MustCompile(`<BANKID>\s*0*(\d+)`)
 
 // DetectImportSource identifies which supported statement the file is by its content, so the
 // file extension does not matter.
@@ -38,8 +50,25 @@ func DetectImportSource(path string) (string, error) {
 
 	upper := strings.ToUpper(string(content))
 	if strings.Contains(upper, "<OFX>") {
-		if strings.Contains(strings.ReplaceAll(upper, " ", ""), "<BANKID>"+itauBankId) {
+		if isNubankCcInvoice(upper) {
+			return ImportSourceNubankCcExtract, nil
+		}
+		bankId := ""
+		if match := ofxBankIdTag.FindStringSubmatch(upper); match != nil {
+			bankId = match[1]
+		}
+		switch bankId {
+		case itauBankId:
 			return ImportSourceItauBankExtract, nil
+		case interBankId:
+			return ImportSourceInterBankExtract, nil
+		}
+		return "", ErrUnsupportedImportFile
+	}
+
+	if strings.HasPrefix(upper, "%PDF") {
+		if isInterCcInvoice(path) {
+			return ImportSourceInterCcExtract, nil
 		}
 		return "", ErrUnsupportedImportFile
 	}
@@ -74,6 +103,12 @@ func Import(ctx context.Context, source string, path string) ([]ImportedFinancia
 		return ImportFromBankExtractItau(ctx, path)
 	case ImportSourceItauCcExtract:
 		return ImportFromCcExtractItau(ctx, path)
+	case ImportSourceInterBankExtract:
+		return ImportFromBankExtractInter(ctx, path)
+	case ImportSourceInterCcExtract:
+		return ImportFromCcExtractInter(ctx, path)
+	case ImportSourceNubankCcExtract:
+		return ImportFromCcExtractNubank(ctx, path)
 	}
 	return nil, ErrUnsupportedImportFile
 }

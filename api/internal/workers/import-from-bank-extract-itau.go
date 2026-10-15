@@ -38,7 +38,7 @@ func ImportFromBankExtractItau(ctx context.Context, filepath string) ([]Imported
 
 	records := make([]ImportedFinancialRecord, 0, len(transactions))
 	for _, trn := range transactions {
-		record, err := trn.toImportedFinancialRecord()
+		record, err := trn.toImportedFinancialRecord(enums.Vendor.ITAU, ImportSourceItauBankExtract)
 		if err != nil {
 			return nil, fmt.Errorf("transaction %s: %w", trn["FITID"], err)
 		}
@@ -84,7 +84,7 @@ func parseOfxTransactions(content string) ([]ofxTransaction, error) {
 	return transactions, nil
 }
 
-func (this ofxTransaction) toImportedFinancialRecord() (ImportedFinancialRecord, error) {
+func (this ofxTransaction) toImportedFinancialRecord(vendor string, source string) (ImportedFinancialRecord, error) {
 	amount, err := decimal.NewFromString(strings.ReplaceAll(this["TRNAMT"], ",", "."))
 	if err != nil {
 		return ImportedFinancialRecord{}, fmt.Errorf("invalid TRNAMT %q: %w", this["TRNAMT"], err)
@@ -105,9 +105,9 @@ func (this ofxTransaction) toImportedFinancialRecord() (ImportedFinancialRecord,
 	}
 
 	return ImportedFinancialRecord{
-		Vendor:        enums.Vendor.ITAU,
+		Vendor:        vendor,
 		VendorId:      this["FITID"],
-		VendorSource:  ImportSourceItauBankExtract,
+		VendorSource:  source,
 		VendorName:    name,
 		Name:          name,
 		Amount:        amount.Abs(),

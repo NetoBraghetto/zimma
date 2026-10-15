@@ -53,7 +53,7 @@ func (this *ImportController) Preview(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, workers.ErrUnsupportedImportFile) {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error": "Arquivo não suportado. Envie um extrato bancário (.ofx) ou uma fatura de cartão (.xlsx) do Itaú.",
+				"error": "Arquivo não suportado. Envie um extrato bancário (.ofx) do Itaú ou do Inter, ou uma fatura de cartão do Itaú (.xlsx), do Inter (.pdf) ou do Nubank (.ofx).",
 			})
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -85,8 +85,8 @@ type importRecord struct {
 	PurchaseDate string          `json:"purchase_date" binding:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
 	Confirmed    *bool           `json:"confirmed" binding:"required,boolean"`
 	Tags         []uint64        `json:"tags" binding:"max=20"`
-	Vendor       string          `json:"vendor" binding:"required,oneof=itau"`
-	VendorSource string          `json:"vendor_source" binding:"required,oneof=itau-bank-extract itau-cc-extract"`
+	Vendor       string          `json:"vendor" binding:"required,oneof=itau inter nubank"`
+	VendorSource string          `json:"vendor_source" binding:"required,oneof=itau-bank-extract itau-cc-extract inter-bank-extract inter-cc-extract nubank-cc-extract"`
 	VendorId     string          `json:"vendor_id" binding:"required,max=128"`
 	VendorName   string          `json:"vendor_name" binding:"max=255"`
 }

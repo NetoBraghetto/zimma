@@ -6,7 +6,13 @@ import type { TagModel } from "@/services/tag-service";
 export const ImportSource = {
   ITAU_BANK_EXTRACT: "itau-bank-extract",
   ITAU_CC_EXTRACT: "itau-cc-extract",
+  INTER_BANK_EXTRACT: "inter-bank-extract",
+  INTER_CC_EXTRACT: "inter-cc-extract",
+  NUBANK_CC_EXTRACT: "nubank-cc-extract",
 } as const;
+
+// Bank statements list entries that already happened, unlike credit card invoices.
+export const BANK_EXTRACT_SOURCES: string[] = [ImportSource.ITAU_BANK_EXTRACT, ImportSource.INTER_BANK_EXTRACT];
 
 export interface ImportedFinancialRecord {
   vendor: string;

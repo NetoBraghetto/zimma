@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { isBefore, startOfDay } from "date-fns";
 import { type ChangeEvent, type ReactNode, useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { TbFileImport } from "react-icons/tb";
@@ -22,7 +23,7 @@ import { CleaveBRLOptions } from "@/constants/cleave-masks";
 import { FinancialRecordTypeList, type FinancialRecordTypeValue } from "@/constants/financial-record";
 import { BRLToDecimal, DecimalToBRL } from "@/lib/currency-formatter";
 import { financialRecordService } from "@/services/financial-record-service";
-import { type ImportPreview, ImportSource, importService } from "@/services/import-service";
+import { BANK_EXTRACT_SOURCES, type ImportPreview, importService } from "@/services/import-service";
 import type { TagModel } from "@/services/tag-service";
 
 function apiErrorMessage(error: unknown, fallback: string): string {
@@ -63,7 +64,7 @@ export function ImportButton(): ReactNode {
 
   return (
     <>
-      <input ref={inputRef} type="file" accept=".ofx,.xlsx" className="hidden" onChange={onFileChange} />
+      <input ref={inputRef} type="file" accept=".ofx,.xlsx,.pdf" className="hidden" onChange={onFileChange} />
       <Button variant="outline" disabled={isLoading} onClick={() => inputRef.current?.click()} aria-label="Importar dados">
         {isLoading ? <Spinner /> : <TbFileImport />}
         <span className="hidden sm:inline">Importar</span>
@@ -99,8 +100,11 @@ type ImportPreviewDialogProps = {
 function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): ReactNode {
   const queryClient = useQueryClient();
   const [tags, setTags] = useState<TagModel[]>([]);
-  // Bank statement entries already happened; credit card ones are paid with the invoice.
-  const confirmedByDefault = preview.source === ImportSource.ITAU_BANK_EXTRACT;
+  // Bank statement entries already happened; credit card ones are paid with the invoice, so they
+  // count as confirmed only once the invoice due date has passed.
+  const isBankExtract = BANK_EXTRACT_SOURCES.includes(preview.source);
+  const today = startOfDay(new Date());
+  const confirmedByDefault = (dueDate: Date) => isBankExtract || isBefore(startOfDay(dueDate), today);
   const {
     control,
     handleSubmit,
@@ -119,7 +123,7 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
         type: record.type,
         due_date: new Date(record.due_date),
         purchase_date: record.purchase_date ? new Date(record.purchase_date) : "",
-        confirmed: confirmedByDefault,
+        confirmed: confirmedByDefault(new Date(record.due_date)),
         tags: record.suggested_tags.map((tag) => tag.id),
         vendor: record.vendor,
         vendor_source: record.vendor_source,

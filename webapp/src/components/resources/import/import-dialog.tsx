@@ -27,6 +27,7 @@ import {
   type PaymentMethodValue,
 } from "@/constants/financial-record";
 import { BRLToDecimal, DecimalToBRL } from "@/lib/currency-formatter";
+import { cn } from "@/lib/utils";
 import { financialRecordService } from "@/services/financial-record-service";
 import { BANK_EXTRACT_SOURCES, type ImportPreview, importService } from "@/services/import-service";
 import type { TagModel } from "@/services/tag-service";
@@ -97,6 +98,12 @@ type ImportRow = {
 };
 
 type FormValues = { records: ImportRow[] };
+
+// The selection and description columns stay pinned while the table scrolls horizontally. They need
+// an opaque background so the scrolled cells do not show through, and the description keeps a
+// divider on its right edge.
+const stickySelectColumn = "sticky left-0 w-10 min-w-10 max-w-10 bg-popover";
+const stickyDescriptionColumn = "sticky left-10 bg-popover shadow-[inset_-1px_0_0_var(--color-border)]";
 
 type ImportPreviewDialogProps = {
   preview: ImportPreview;
@@ -238,7 +245,7 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
             <Table>
               <TableHeader className="sticky top-0 z-10 bg-popover">
                 <TableRow>
-                  <TableHead className="w-10">
+                  <TableHead className={cn(stickySelectColumn, "z-20")}>
                     <Checkbox
                       checked={allSelected}
                       indeterminate={selectedCount > 0 && !allSelected}
@@ -246,7 +253,7 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
                       aria-label="Selecionar todos"
                     />
                   </TableHead>
-                  <TableHead className="min-w-64">Descrição</TableHead>
+                  <TableHead className={cn(stickyDescriptionColumn, "z-20 min-w-64")}>Descrição</TableHead>
                   <TableHead className="min-w-36">Valor</TableHead>
                   <TableHead className="min-w-32">Tipo</TableHead>
                   <TableHead className="min-w-44">Pagamento</TableHead>
@@ -261,11 +268,12 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
                   const rowErrors = errors.records?.[i];
                   const isSelected = records[i]?.selected;
                   return (
-                    <TableRow key={field.id} className={isSelected ? undefined : "opacity-50"}>
-                      <TableCell className="align-top pt-4">
+                    // Fades the cell contents instead of the row, so the pinned cells keep an opaque background.
+                    <TableRow key={field.id} className={isSelected ? undefined : "[&>td>*]:opacity-50"}>
+                      <TableCell className={cn(stickySelectColumn, "z-1 align-top pt-4")}>
                         <FormCheckbox label="" name={`records.${i}.selected`} control={control} aria-label="Importar este lançamento" />
                       </TableCell>
-                      <TableCell className="align-top">
+                      <TableCell className={cn(stickyDescriptionColumn, "z-1 min-w-64 align-top")}>
                         <FormText name={`records.${i}.name`} control={control} error={rowErrors?.name} aria-label="Descrição" />
                         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                           {field.vendor_name !== records[i]?.name ? <span>{field.vendor_name}</span> : null}

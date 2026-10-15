@@ -104,17 +104,18 @@ func (this *FinancialRecordController) View(c *gin.Context) {
 }
 
 type storeFinancialRecord struct {
-	Name         string          `json:"name" binding:"required,min=3,max=255"`
-	Amount       decimal.Decimal `json:"amount" binding:"required"`
-	Type         int             `json:"type" binding:"required,oneof=1 2"`
-	DueDate      string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
-	PurchaseDate string          `json:"purchase_date" binding:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
-	Confirmed    *bool           `json:"confirmed" binding:"required,boolean"`
-	RecurrenceId int             `json:"recurrence_id" binding:"required,oneof=1 2 3 4"`
-	IntervalId   *int            `json:"interval_id"`
-	IntervalDays *int            `json:"interval_days"`
-	RepeatCount  *int            `json:"repeat_count"`
-	Tags         []uint64        `json:"tags" binding:"max=20"`
+	Name          string          `json:"name" binding:"required,min=3,max=255"`
+	Amount        decimal.Decimal `json:"amount" binding:"required"`
+	Type          int             `json:"type" binding:"required,oneof=1 2"`
+	DueDate       string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	PurchaseDate  string          `json:"purchase_date" binding:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
+	Confirmed     *bool           `json:"confirmed" binding:"required,boolean"`
+	PaymentMethod string          `json:"payment_method" binding:"omitempty,oneof=pix cash credit_card"`
+	RecurrenceId  int             `json:"recurrence_id" binding:"required,oneof=1 2 3 4"`
+	IntervalId    *int            `json:"interval_id"`
+	IntervalDays  *int            `json:"interval_days"`
+	RepeatCount   *int            `json:"repeat_count"`
+	Tags          []uint64        `json:"tags" binding:"max=20"`
 }
 
 func (this *storeFinancialRecord) hasRepeatCount() bool {
@@ -212,6 +213,7 @@ func (this *FinancialRecordController) Store(c *gin.Context) {
 				DueDate: serie.OccurrenceDate(i),
 				// Every installment comes from the same purchase.
 				PurchaseDate:           purchaseDate,
+				PaymentMethod:          enums.NullablePaymentMethod(req.PaymentMethod),
 				FinancialRecordSerieId: serie.ID,
 				Installment:            installment,
 				Tags:                   tags,
@@ -234,12 +236,13 @@ func (this *FinancialRecordController) Store(c *gin.Context) {
 }
 
 type updateFinancialRecord struct {
-	Name         string          `json:"name" binding:"required,min=3,max=255"`
-	Amount       decimal.Decimal `json:"amount" binding:"required"`
-	DueDate      string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
-	PurchaseDate string          `json:"purchase_date" binding:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
-	Confirmed    *bool           `json:"confirmed" binding:"required,boolean"`
-	Tags         []uint64        `json:"tags" binding:"max=20"`
+	Name          string          `json:"name" binding:"required,min=3,max=255"`
+	Amount        decimal.Decimal `json:"amount" binding:"required"`
+	DueDate       string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	PurchaseDate  string          `json:"purchase_date" binding:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
+	Confirmed     *bool           `json:"confirmed" binding:"required,boolean"`
+	PaymentMethod string          `json:"payment_method" binding:"omitempty,oneof=pix cash credit_card"`
+	Tags          []uint64        `json:"tags" binding:"max=20"`
 }
 
 func (this *FinancialRecordController) Update(c *gin.Context) {
@@ -269,6 +272,7 @@ func (this *FinancialRecordController) Update(c *gin.Context) {
 	resource.Amount = req.Amount
 	resource.DueDate, _ = time.Parse("2006-01-02T15:04:05Z07:00", req.DueDate)
 	resource.PurchaseDate = parseOptionalDate(req.PurchaseDate)
+	resource.PaymentMethod = enums.NullablePaymentMethod(req.PaymentMethod)
 	if req.Confirmed == nil || !*req.Confirmed {
 		resource.ConfirmedAt = nil
 	} else {

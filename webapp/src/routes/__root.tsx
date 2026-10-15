@@ -32,7 +32,7 @@ function RootComponent() {
       {/* <TooltipProvider> */}
       <Outlet />
       {/* </TooltipProvider> */}
-      <Toaster richColors />
+      <Toaster richColors position="top-right" />
     </>
   );
 }

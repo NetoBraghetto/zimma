@@ -20,7 +20,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Spinner } from "@/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CleaveBRLOptions } from "@/constants/cleave-masks";
-import { FinancialRecordTypeList, type FinancialRecordTypeValue } from "@/constants/financial-record";
+import {
+  FinancialRecordTypeList,
+  type FinancialRecordTypeValue,
+  PaymentMethodList,
+  type PaymentMethodValue,
+} from "@/constants/financial-record";
 import { BRLToDecimal, DecimalToBRL } from "@/lib/currency-formatter";
 import { financialRecordService } from "@/services/financial-record-service";
 import { BANK_EXTRACT_SOURCES, type ImportPreview, importService } from "@/services/import-service";
@@ -83,6 +88,7 @@ type ImportRow = {
   type: FinancialRecordTypeValue | string;
   due_date: Date | "";
   purchase_date: Date | "";
+  payment_method: PaymentMethodValue | "";
   confirmed: boolean;
   tags: number[];
   vendor: string;
@@ -123,6 +129,7 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
         type: record.type,
         due_date: new Date(record.due_date),
         purchase_date: record.purchase_date ? new Date(record.purchase_date) : "",
+        payment_method: record.payment_method ?? "",
         confirmed: confirmedByDefault(new Date(record.due_date)),
         tags: record.suggested_tags.map((tag) => tag.id),
         vendor: record.vendor,
@@ -188,6 +195,7 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
         type: Number(record.type) as FinancialRecordTypeValue,
         due_date: new Date(record.due_date).toISOString(),
         purchase_date: record.purchase_date ? new Date(record.purchase_date).toISOString() : null,
+        payment_method: record.payment_method || null,
         confirmed: record.confirmed,
         tags: record.tags.map(Number),
         vendor: record.vendor,
@@ -241,6 +249,7 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
                   <TableHead className="min-w-64">Descrição</TableHead>
                   <TableHead className="min-w-36">Valor</TableHead>
                   <TableHead className="min-w-32">Tipo</TableHead>
+                  <TableHead className="min-w-44">Pagamento</TableHead>
                   <TableHead>Compra</TableHead>
                   <TableHead>Vencimento</TableHead>
                   <TableHead>Confirmado</TableHead>
@@ -275,6 +284,15 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
                       </TableCell>
                       <TableCell className="align-top">
                         <FormSelect name={`records.${i}.type`} control={control} options={FinancialRecordTypeList} aria-label="Tipo" />
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <FormSelect
+                          name={`records.${i}.payment_method`}
+                          control={control}
+                          options={PaymentMethodList}
+                          placeholder="Não informada"
+                          aria-label="Forma de pagamento"
+                        />
                       </TableCell>
                       <TableCell className="align-top">
                         <FormDate name={`records.${i}.purchase_date`} control={control} />

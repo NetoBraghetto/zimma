@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"zimma/internal/bootstrap"
+	"zimma/internal/enums"
 	"zimma/internal/models"
 	"zimma/internal/workers"
 
@@ -78,17 +79,18 @@ func (this *ImportController) Preview(c *gin.Context) {
 }
 
 type importRecord struct {
-	Name         string          `json:"name" binding:"required,min=3,max=255"`
-	Amount       decimal.Decimal `json:"amount" binding:"required"`
-	Type         int             `json:"type" binding:"required,oneof=1 2"`
-	DueDate      string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
-	PurchaseDate string          `json:"purchase_date" binding:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
-	Confirmed    *bool           `json:"confirmed" binding:"required,boolean"`
-	Tags         []uint64        `json:"tags" binding:"max=20"`
-	Vendor       string          `json:"vendor" binding:"required,oneof=itau inter nubank"`
-	VendorSource string          `json:"vendor_source" binding:"required,oneof=itau-bank-extract itau-cc-extract inter-bank-extract inter-cc-extract nubank-cc-extract"`
-	VendorId     string          `json:"vendor_id" binding:"required,max=128"`
-	VendorName   string          `json:"vendor_name" binding:"max=255"`
+	Name          string          `json:"name" binding:"required,min=3,max=255"`
+	Amount        decimal.Decimal `json:"amount" binding:"required"`
+	Type          int             `json:"type" binding:"required,oneof=1 2"`
+	DueDate       string          `json:"due_date" binding:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	PurchaseDate  string          `json:"purchase_date" binding:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
+	Confirmed     *bool           `json:"confirmed" binding:"required,boolean"`
+	PaymentMethod string          `json:"payment_method" binding:"omitempty,oneof=pix cash credit_card"`
+	Tags          []uint64        `json:"tags" binding:"max=20"`
+	Vendor        string          `json:"vendor" binding:"required,oneof=itau inter nubank"`
+	VendorSource  string          `json:"vendor_source" binding:"required,oneof=itau-bank-extract itau-cc-extract inter-bank-extract inter-cc-extract nubank-cc-extract"`
+	VendorId      string          `json:"vendor_id" binding:"required,max=128"`
+	VendorName    string          `json:"vendor_name" binding:"max=255"`
 }
 
 type storeImport struct {
@@ -174,6 +176,7 @@ func (this *ImportController) Store(c *gin.Context) {
 				Type:                   record.Type,
 				DueDate:                dueDate,
 				PurchaseDate:           purchaseDate,
+				PaymentMethod:          enums.NullablePaymentMethod(record.PaymentMethod),
 				ConfirmedAt:            confirmedAt,
 				Installment:            1,
 				Vendor:                 &vendor,

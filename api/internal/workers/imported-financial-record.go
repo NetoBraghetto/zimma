@@ -8,6 +8,7 @@ import (
 	"unicode"
 
 	"zimma/internal/bootstrap"
+	"zimma/internal/enums"
 	"zimma/internal/models"
 
 	"github.com/shopspring/decimal"
@@ -19,17 +20,43 @@ type ImportedFinancialRecord struct {
 	Vendor string `json:"vendor"`
 	// Transaction id given by the vendor (OFX FITID) or derived from the entry when it has none,
 	// useful to detect duplicated imports.
-	VendorId      string          `json:"vendor_id"`
-	VendorSource  string          `json:"vendor_source"`
-	VendorName    string          `json:"vendor_name"`
-	Name          string          `json:"name"`
-	Amount        decimal.Decimal `json:"amount"`
-	Type          int             `json:"type"`
-	DueDate       time.Time       `json:"due_date"`
-	PurchaseDate  time.Time       `json:"purchase_date"`
-	SuggestedTags []models.Tag    `json:"suggested_tags"`
+	VendorId     string          `json:"vendor_id"`
+	VendorSource string          `json:"vendor_source"`
+	VendorName   string          `json:"vendor_name"`
+	Name         string          `json:"name"`
+	Amount       decimal.Decimal `json:"amount"`
+	Type         int             `json:"type"`
+	DueDate      time.Time       `json:"due_date"`
+	PurchaseDate time.Time       `json:"purchase_date"`
+	// Suggested payment method (one of enums.PaymentMethod), nil when it cannot be told.
+	PaymentMethod *string      `json:"payment_method"`
+	SuggestedTags []models.Tag `json:"suggested_tags"`
 	// True when a record with the same vendor id was already imported by the user.
 	AlreadyImported bool `json:"already_imported"`
+}
+
+// Statement sources whose entries were all paid with a credit card.
+var creditCardSources = map[string]bool{
+	ImportSourceItauCcExtract:   true,
+	ImportSourceInterCcExtract:  true,
+	ImportSourceNubankCcExtract: true,
+}
+
+// suggestPaymentMethods fills the payment method from the statement source and, for bank
+// statements, from the entry description.
+func suggestPaymentMethods(source string, records []ImportedFinancialRecord) {
+	for i := range records {
+		var method string
+		switch {
+		case creditCardSources[source]:
+			method = enums.PaymentMethod.CREDIT_CARD
+		case containsWord(normalizeForMatch(records[i].VendorName), "pix"):
+			method = enums.PaymentMethod.PIX
+		default:
+			continue
+		}
+		records[i].PaymentMethod = &method
+	}
 }
 
 // Maximum number of tags suggested for each imported record.

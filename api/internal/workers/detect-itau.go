@@ -98,6 +98,15 @@ func DetectImportSource(path string) (string, error) {
 
 // Import parses the file with the importer of the given source.
 func Import(ctx context.Context, source string, path string) ([]ImportedFinancialRecord, error) {
+	records, err := importBySource(ctx, source, path)
+	if err != nil {
+		return nil, err
+	}
+	suggestPaymentMethods(source, records)
+	return records, nil
+}
+
+func importBySource(ctx context.Context, source string, path string) ([]ImportedFinancialRecord, error) {
 	switch source {
 	case ImportSourceItauBankExtract:
 		return ImportFromBankExtractItau(ctx, path)

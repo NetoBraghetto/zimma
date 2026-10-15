@@ -51,3 +51,19 @@ export const FinancialRecordTypeList = [
 ];
 
 export type FinancialRecordTypeValue = ValueOf<typeof FinancialRecordType>;
+
+// Payment method
+
+export const PaymentMethod = {
+  PIX: "pix",
+  CASH: "cash",
+  CREDIT_CARD: "credit_card",
+} as const;
+
+export const PaymentMethodList = [
+  { name: "Pix", id: PaymentMethod.PIX },
+  { name: "Dinheiro", id: PaymentMethod.CASH },
+  { name: "Cartão de crédito", id: PaymentMethod.CREDIT_CARD },
+];
+
+export type PaymentMethodValue = ValueOf<typeof PaymentMethod>;

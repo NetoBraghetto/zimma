@@ -22,6 +22,7 @@ import {
   type FinancialRecordRecurrenceIntervalValue,
   FinancialRecordRecurrenceList,
   type FinancialRecordTypeValue,
+  PaymentMethodList,
 } from "@/constants/financial-record";
 import { BRLToDecimal, DecimalToBRL } from "@/lib/currency-formatter";
 import type { SucessServerResponse } from "@/lib/format-success-response";
@@ -100,6 +101,7 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
       amount: "",
       due_date: "",
       purchase_date: "",
+      payment_method: null,
       type,
       confirmed: false,
       recurrence_id: FinancialRecordRecurrence.UNIQUE,
@@ -158,6 +160,7 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
         ...values,
         amount: BRLToDecimal(values.amount),
         purchase_date: values.purchase_date ? new Date(values.purchase_date).toISOString() : null,
+        payment_method: values.payment_method || null,
         type,
         recurrence_id: recurrenceValue,
         interval_id: isUnique ? null : intervalValue,
@@ -306,6 +309,14 @@ export function FinancialRecordForm({ id, type, onSave }: FinancialRecordFormPro
             {renderRecurrenceDescription()}
           </>
         )}
+        <FormSelect
+          label="Forma de pagamento"
+          name="payment_method"
+          control={control}
+          error={errors.payment_method}
+          options={PaymentMethodList}
+          placeholder="Não informada"
+        />
         <FormDate label="Data da compra" name="purchase_date" control={control} error={errors.purchase_date} />
         <FormDate label="Vencimento" name="due_date" control={control} error={errors.due_date} />
         <FormCheckbox label="Confirmado" name="confirmed" control={control} />

@@ -2,6 +2,7 @@ import type {
   FinancialRecordRecurrenceIntervalValue,
   FinancialRecordRecurrenceValue,
   FinancialRecordTypeValue,
+  PaymentMethodValue,
 } from "@/constants/financial-record";
 import type { SqlDateTimeFormat } from "@/lib/ts-helpers";
 import { type NewResource, RestfulService } from "@/services/restful-service";
@@ -12,6 +13,7 @@ export interface NewFinancialRecordModel extends NewResource {
   amount: string;
   due_date: string;
   purchase_date: string | null;
+  payment_method: PaymentMethodValue | null;
   type: FinancialRecordTypeValue;
   confirmed: boolean;
   recurrence_id: FinancialRecordRecurrenceValue;

@@ -26,7 +26,9 @@ type FinancialRecord struct {
 	// When the purchase happened; differs from DueDate for credit card entries, paid with the invoice.
 	PurchaseDate *time.Time `json:"purchase_date"`
 	ConfirmedAt  *time.Time `json:"confirmed_at"`
-	Installment  int        `json:"installment"`
+	// One of enums.PaymentMethod; nil when not informed.
+	PaymentMethod *string `gorm:"size:32" json:"payment_method"`
+	Installment   int     `json:"installment"`
 	// Origin of imported records (bank or credit card statements), used to skip duplicated imports.
 	Vendor       *string `gorm:"size:32;index:idx_financial_record_vendor" json:"vendor"`
 	VendorSource *string `gorm:"size:32;index:idx_financial_record_vendor" json:"vendor_source"`

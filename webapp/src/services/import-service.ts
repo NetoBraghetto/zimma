@@ -1,4 +1,4 @@
-import type { FinancialRecordTypeValue } from "@/constants/financial-record";
+import type { FinancialRecordTypeValue, PaymentMethodValue } from "@/constants/financial-record";
 import { FormatSuccessResponse, type SucessServerResponse } from "@/lib/format-success-response";
 import { api } from "@/services/http-client";
 import type { TagModel } from "@/services/tag-service";
@@ -24,6 +24,7 @@ export interface ImportedFinancialRecord {
   type: FinancialRecordTypeValue;
   due_date: string;
   purchase_date: string;
+  payment_method: PaymentMethodValue | null;
   suggested_tags: TagModel[];
   already_imported: boolean;
 }
@@ -40,6 +41,7 @@ export interface ImportRecordPayload {
   type: FinancialRecordTypeValue;
   due_date: string;
   purchase_date: string | null;
+  payment_method: PaymentMethodValue | null;
   confirmed: boolean;
   tags: number[];
   vendor: string;

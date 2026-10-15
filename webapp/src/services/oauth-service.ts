@@ -62,7 +62,7 @@ class OAuthService {
       headers: { Authorization: "" },
     });
     const parsed = FormatSuccessResponse<OAuthExchangeResponse, Record<string, never>>(response);
-    JWTService.setToken(parsed.data.token);
+    JWTService.setToken(parsed.data.token, parsed.data.refresh_token);
     eventManager.fire(AppEvents.onLogin, parsed.data);
     return parsed;
   }

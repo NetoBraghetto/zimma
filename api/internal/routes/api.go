@@ -41,6 +41,8 @@ func RegisterApiRoutes(router *gin.Engine) {
 	// router.GET("/", (&controllers.HomeController{}).List)
 	router.POST("/auth/register", authController.Register)
 	router.POST("/auth/login", authController.Login)
+	router.POST("/auth/refresh", authController.Refresh)
+	router.POST("/auth/logout", authController.Logout)
 	router.POST("/auth/password-recovery", authController.PasswordRecovery)
 	router.POST("/auth/password-reset", authController.PasswordReset)
 	router.POST("/auth/oauth/:provider/authorize", oauthController.Authorize)

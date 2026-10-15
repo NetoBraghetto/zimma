@@ -105,11 +105,11 @@ func (this *AuthController) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": payload})
 }
 
-// issueAuthToken signs a JWT for the user and returns the login response payload.
+// issueAuthToken signs a JWT for the user, creates a refresh token and returns the login response payload.
 func issueAuthToken(c *gin.Context, user models.User) (gin.H, error) {
 	now := time.Now()
 	jti, _ := services.GenerateSecureString(16)
-	expiresIn := now.Add(time.Hour * 1).Unix()
+	expiresIn := now.Add(time.Minute * 10).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.RegisteredClaims{
 		Issuer:    c.Request.URL.String(),
 		Subject:   strconv.FormatUint(user.ID, 10),
@@ -123,11 +123,18 @@ func issueAuthToken(c *gin.Context, user models.User) (gin.H, error) {
 		return nil, err
 	}
 
+	refreshToken, refreshExpiresAt, err := issueRefreshToken(bootstrap.DB.WithContext(c.Request.Context()), user.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	return gin.H{
-		"user":       user,
-		"token":      tokenString,
-		"expires_in": expiresIn,
-		"token_type": "Bearer",
+		"user":               user,
+		"token":              tokenString,
+		"expires_in":         expiresIn,
+		"token_type":         "Bearer",
+		"refresh_token":      refreshToken,
+		"refresh_expires_in": refreshExpiresAt.Unix(),
 	}, nil
 }
 

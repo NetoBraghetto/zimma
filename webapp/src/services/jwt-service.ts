@@ -21,18 +21,27 @@ export type DecodedJWT = {
 // biome-ignore lint/complexity/noStaticOnlyClass: exception
 export class JWTService {
   private static key = "jwt-token";
+  private static refreshKey = "jwt-refresh-token";
 
   public static async getToken(): Promise<string | null> {
     return window.localStorage.getItem(JWTService.key);
   }
 
-  public static setToken(token: string): void {
+  public static getRefreshToken(): string | null {
+    return window.localStorage.getItem(JWTService.refreshKey);
+  }
+
+  public static setToken(token: string, refreshToken?: string | null): void {
     window.localStorage.setItem(JWTService.key, token);
+    if (refreshToken) {
+      window.localStorage.setItem(JWTService.refreshKey, refreshToken);
+    }
     api.defaults.headers.Authorization = `Bearer ${token}`;
   }
 
   public static clearToken(): void {
     window.localStorage.removeItem(JWTService.key);
+    window.localStorage.removeItem(JWTService.refreshKey);
     delete api.defaults.headers.Authorization;
   }
 

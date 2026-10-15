@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { addMonths, format, formatISO, isValid, parse, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Decimal from "decimal.js";
@@ -10,7 +10,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { FloatingActionButton } from "@/components/layout/floating-action-button";
 import { FinancialRecordStatusBadge } from "@/components/resources/financial-record/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FinancialRecordType } from "@/constants/financial-record";
@@ -20,6 +20,7 @@ import { dashboardService } from "@/services/dashboard-service";
 import type { FinancialRecordModel } from "@/services/financial-record-service";
 
 const LATEST_RECORDS_LIMIT = 6;
+const LATEST_EXPENSES_LIMIT = 5;
 const QS_MONTH_INDEX = "month";
 const MONTH_FORMAT = "yyyy-MM";
 const UNTAGGED_COLOR = "#9ca3af";
@@ -59,10 +60,6 @@ function formatSignedAmount(item: FinancialRecordModel): string {
 
 function signedAmount(item: FinancialRecordModel): Decimal {
   return item.type === FinancialRecordType.EXPENSE ? new Decimal(item.amount).neg() : new Decimal(item.amount);
-}
-
-function byDueDate(a: FinancialRecordModel, b: FinancialRecordModel): number {
-  return new Date(a.due_date).getTime() - new Date(b.due_date).getTime() || a.id - b.id;
 }
 
 function byLatestCreated(a: FinancialRecordModel, b: FinancialRecordModel): number {
@@ -122,7 +119,7 @@ function RouteComponent() {
   const previousExpense = dashboard ? new Decimal(dashboard.previous_month_total_expense || 0) : undefined;
   const previousBalance = previousIncome && previousExpense ? previousIncome.minus(previousExpense) : undefined;
 
-  const sortedExpenses = [...expenses].sort(byDueDate);
+  const latestExpenses = [...expenses].sort(byLatestCreated).slice(0, LATEST_EXPENSES_LIMIT);
   const latestRecords = [...incomes, ...expenses].sort(byLatestCreated).slice(0, LATEST_RECORDS_LIMIT);
   const latestTotal = latestRecords.reduce((total, item) => total.plus(signedAmount(item)), new Decimal(0));
 
@@ -192,9 +189,26 @@ function RouteComponent() {
       </div>
       <div className="col-span-2">
         <Card size="sm">
+          <CardHeader>
+            <CardTitle>Últimas despesas</CardTitle>
+            <CardAction>
+              <Link
+                to="/despesas"
+                search={{ [QS_MONTH_INDEX]: format(month, MONTH_FORMAT) }}
+                className={buttonVariants({ variant: "ghost", size: "sm" })}
+              >
+                Ver todas
+                <TbArrowRight className="size-4" />
+              </Link>
+            </CardAction>
+          </CardHeader>
           <CardContent>
             <Table>
-              <TableCaption>Lista de despesas.</TableCaption>
+              <TableCaption>
+                {expenses.length > latestExpenses.length
+                  ? `${latestExpenses.length} de ${expenses.length} despesas do mês.`
+                  : "Lista de despesas."}
+              </TableCaption>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[100px]">Data</TableHead>
@@ -205,13 +219,13 @@ function RouteComponent() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedExpenses.map((item) => (
+                {latestExpenses.map((item) => (
                   <FinancialRecordRow key={item.id} item={item} />
                 ))}
               </TableBody>
               <TableFooter>
                 <TableRow>
-                  <TableCell colSpan={4}>Total</TableCell>
+                  <TableCell colSpan={4}>Total do mês</TableCell>
                   <TableCell className="text-right text-red-700">{expenseTotal ? `- ${formatCurrency(expenseTotal)}` : "—"}</TableCell>
                 </TableRow>
               </TableFooter>

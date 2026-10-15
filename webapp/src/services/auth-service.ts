@@ -38,6 +38,7 @@ export type AuthModel = {
 export type AuthTokenResponse = {
   token: string;
   token_type: "bearer";
+  refresh_token?: string;
   user: AuthModel;
   mfa_required?: boolean | null;
   mfa_token?: string | null;
@@ -71,7 +72,7 @@ class AuthService {
         .then((response) => {
           const parsedResponse = FormatSuccessResponse<AuthTokenResponse, Record<string, never>>(response);
           if (!parsedResponse.data.mfa_required) {
-            JWTService.setToken(parsedResponse.data.token);
+            JWTService.setToken(parsedResponse.data.token, parsedResponse.data.refresh_token);
             eventManager.fire(AppEvents.onLogin, parsedResponse.data);
           }
           resolve(parsedResponse);
@@ -93,7 +94,7 @@ class AuthService {
         })
         .then((response) => {
           const parsedResponse = FormatSuccessResponse<AuthTokenResponse, Record<string, never>>(response);
-          JWTService.setToken(parsedResponse.data.token);
+          JWTService.setToken(parsedResponse.data.token, parsedResponse.data.refresh_token);
           if (parsedResponse.data.device_token) {
             DeviceService.setDeviceToken(parsedResponse.data.device_token);
           }
@@ -163,6 +164,11 @@ class AuthService {
   }
 
   logout(): void {
+    // Revokes the refresh token on the API; the local session ends even if the request fails.
+    const refreshToken = JWTService.getRefreshToken();
+    if (refreshToken) {
+      api.post(`${this.path}/logout`, JSON.stringify({ refresh_token: refreshToken }), { headers: { Authorization: "" } }).catch(() => {});
+    }
     JWTService.clearToken();
     eventManager.fire(AppEvents.onLogout);
   }

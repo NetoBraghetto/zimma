@@ -36,6 +36,12 @@ tty-webapp:
 # openapi:
 # 	docker exec -it ${DOCKER_APP}-api sh -c "./vendor/bin/openapi app/ --version 3.1.0 --output openapi.yaml"
 
+# expose-api:
+# 	ngrok http http://api.${APP_DOMAIN}:80 --host-header=api.${APP_DOMAIN} $(if ${NGROK_DOMAIN},--url=https://${NGROK_DOMAIN})
+
+# expose-webapp:
+#  	ngrok http http://api.${APP_DOMAIN}:80 --host-header=${APP_DOMAIN} $(if ${NGROK_DOMAIN},--url=https://${NGROK_DOMAIN})
+
 key-generate:
 	@openssl genrsa -out ./private_key.pem 4096
 	@openssl rsa -in private_key.pem -pubout -out public_key.pem

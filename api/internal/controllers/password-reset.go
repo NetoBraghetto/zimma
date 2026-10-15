@@ -160,6 +160,11 @@ func (this *AuthController) PasswordReset(c *gin.Context) {
 			return result.Error
 		}
 		userFound = result.RowsAffected > 0
+		// Sessions opened with the old password can no longer be renewed.
+		err := tx.Where("user_id IN (SELECT id FROM \"user\" WHERE email = ?)", req.Email).Delete(&models.RefreshToken{}).Error
+		if err != nil {
+			return err
+		}
 		return tx.Where("email = ?", req.Email).Delete(&models.PasswordResetToken{}).Error
 	})
 	if err != nil {

@@ -1,8 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { isBefore, startOfDay } from "date-fns";
-import { type ChangeEvent, type ReactNode, useEffect, useRef, useState } from "react";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { type ChangeEvent, memo, type ReactNode, useEffect, useRef, useState } from "react";
+import { type Control, type FieldArrayWithId, useFieldArray, useForm, useFormState, useWatch } from "react-hook-form";
 import { TbFileImport } from "react-icons/tb";
 import { toast } from "sonner";
 import { Form } from "@/components/form/form";
@@ -124,7 +124,7 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
     setValue,
     setError,
     clearErrors,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<FormValues>({
     defaultValues: {
       records: preview.records.map((record) => ({
@@ -146,9 +146,11 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
     },
   });
   const { fields } = useFieldArray({ control, name: "records" });
-  const records = useWatch({ control, name: "records" });
-  const selectedCount = records.filter((record) => record.selected).length;
-  const allSelected = selectedCount === records.length;
+  // Watches only the selection flags: watching "records" would re-render every row on any change
+  // (e.g. adding a tag), which is slow on invoices with many entries.
+  const selected = useWatch({ control, name: fields.map((_field, i) => `records.${i}.selected` as const) });
+  const selectedCount = selected.filter(Boolean).length;
+  const allSelected = selectedCount === fields.length;
 
   useEffect(() => {
     async function request() {
@@ -161,7 +163,7 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
   }, []);
 
   function toggleAll(checked: boolean) {
-    records.forEach((_record, i) => {
+    fields.forEach((_field, i) => {
       setValue(`records.${i}.selected`, checked);
     });
   }
@@ -238,7 +240,7 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
             <DialogTitle>{preview.source_label}</DialogTitle>
             <DialogDescription>
               Revise os lançamentos encontrados, ajuste o que for preciso e escolha quais serão importados. {selectedCount} de{" "}
-              {records.length} selecionado{records.length === 1 ? "" : "s"}.
+              {fields.length} selecionado{fields.length === 1 ? "" : "s"}.
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-[65vh] overflow-auto">
@@ -264,59 +266,9 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {fields.map((field, i) => {
-                  const rowErrors = errors.records?.[i];
-                  const isSelected = records[i]?.selected;
-                  return (
-                    // Fades the cell contents instead of the row, so the pinned cells keep an opaque background.
-                    <TableRow key={field.id} className={isSelected ? undefined : "[&>td>*]:opacity-50"}>
-                      <TableCell className={cn(stickySelectColumn, "z-1 align-top pt-4")}>
-                        <FormCheckbox label="" name={`records.${i}.selected`} control={control} aria-label="Importar este lançamento" />
-                      </TableCell>
-                      <TableCell className={cn(stickyDescriptionColumn, "z-1 min-w-64 align-top")}>
-                        <FormText name={`records.${i}.name`} control={control} error={rowErrors?.name} aria-label="Descrição" />
-                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                          {field.vendor_name !== records[i]?.name ? <span>{field.vendor_name}</span> : null}
-                          {field.already_imported ? <Badge variant="secondary">Já importado</Badge> : null}
-                        </div>
-                      </TableCell>
-                      <TableCell className="align-top">
-                        <FormMasked
-                          name={`records.${i}.amount`}
-                          control={control}
-                          error={rowErrors?.amount}
-                          options={CleaveBRLOptions}
-                          placeholder="0,00"
-                          aria-label="Valor"
-                        />
-                      </TableCell>
-                      <TableCell className="align-top">
-                        <FormSelect name={`records.${i}.type`} control={control} options={FinancialRecordTypeList} aria-label="Tipo" />
-                      </TableCell>
-                      <TableCell className="align-top">
-                        <FormSelect
-                          name={`records.${i}.payment_method`}
-                          control={control}
-                          options={PaymentMethodList}
-                          placeholder="Não informada"
-                          aria-label="Forma de pagamento"
-                        />
-                      </TableCell>
-                      <TableCell className="align-top">
-                        <FormDate name={`records.${i}.purchase_date`} control={control} />
-                      </TableCell>
-                      <TableCell className="align-top">
-                        <FormDate name={`records.${i}.due_date`} control={control} error={rowErrors?.due_date} />
-                      </TableCell>
-                      <TableCell className="align-top pt-4">
-                        <FormCheckbox label="" name={`records.${i}.confirmed`} control={control} aria-label="Confirmado" />
-                      </TableCell>
-                      <TableCell className="align-top">
-                        <FormTags name={`records.${i}.tags`} control={control} options={tags} aria-label="Tags" />
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {fields.map((field, i) => (
+                  <ImportPreviewRow key={field.id} index={i} field={field} control={control} tags={tags} />
+                ))}
               </TableBody>
             </Table>
           </div>
@@ -333,3 +285,68 @@ function ImportPreviewDialog({ preview, onClose }: ImportPreviewDialogProps): Re
     </Dialog>
   );
 }
+
+type ImportPreviewRowProps = {
+  index: number;
+  field: FieldArrayWithId<FormValues, "records">;
+  control: Control<FormValues>;
+  tags: TagModel[];
+};
+
+// A row only re-renders when its own selection, name or errors change; each input subscribes to
+// its own value. Memoized so changes in other rows do not render it again.
+const ImportPreviewRow = memo(function ImportPreviewRow({ index, field, control, tags }: ImportPreviewRowProps): ReactNode {
+  const [isSelected, name] = useWatch({ control, name: [`records.${index}.selected`, `records.${index}.name`] });
+  const { errors } = useFormState({ control, name: `records.${index}` });
+  const rowErrors = errors.records?.[index];
+
+  return (
+    // Fades the cell contents instead of the row, so the pinned cells keep an opaque background.
+    <TableRow className={isSelected ? undefined : "[&>td>*]:opacity-50"}>
+      <TableCell className={cn(stickySelectColumn, "z-1 align-top pt-4")}>
+        <FormCheckbox label="" name={`records.${index}.selected`} control={control} aria-label="Importar este lançamento" />
+      </TableCell>
+      <TableCell className={cn(stickyDescriptionColumn, "z-1 min-w-64 align-top")}>
+        <FormText name={`records.${index}.name`} control={control} error={rowErrors?.name} aria-label="Descrição" />
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          {field.vendor_name !== name ? <span>{field.vendor_name}</span> : null}
+          {field.already_imported ? <Badge variant="secondary">Já importado</Badge> : null}
+        </div>
+      </TableCell>
+      <TableCell className="align-top">
+        <FormMasked
+          name={`records.${index}.amount`}
+          control={control}
+          error={rowErrors?.amount}
+          options={CleaveBRLOptions}
+          placeholder="0,00"
+          aria-label="Valor"
+        />
+      </TableCell>
+      <TableCell className="align-top">
+        <FormSelect name={`records.${index}.type`} control={control} options={FinancialRecordTypeList} aria-label="Tipo" />
+      </TableCell>
+      <TableCell className="align-top">
+        <FormSelect
+          name={`records.${index}.payment_method`}
+          control={control}
+          options={PaymentMethodList}
+          placeholder="Não informada"
+          aria-label="Forma de pagamento"
+        />
+      </TableCell>
+      <TableCell className="align-top">
+        <FormDate name={`records.${index}.purchase_date`} control={control} />
+      </TableCell>
+      <TableCell className="align-top">
+        <FormDate name={`records.${index}.due_date`} control={control} error={rowErrors?.due_date} />
+      </TableCell>
+      <TableCell className="align-top pt-4">
+        <FormCheckbox label="" name={`records.${index}.confirmed`} control={control} aria-label="Confirmado" />
+      </TableCell>
+      <TableCell className="align-top">
+        <FormTags name={`records.${index}.tags`} control={control} options={tags} aria-label="Tags" />
+      </TableCell>
+    </TableRow>
+  );
+});

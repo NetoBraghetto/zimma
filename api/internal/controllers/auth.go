@@ -95,6 +95,18 @@ func (this *AuthController) Login(c *gin.Context) {
 		return
 	}
 
+	payload, err := issueAuthToken(c, user)
+	if err != nil {
+		log.Default().Printf("failed to sign token: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": payload})
+}
+
+// issueAuthToken signs a JWT for the user and returns the login response payload.
+func issueAuthToken(c *gin.Context, user models.User) (gin.H, error) {
 	now := time.Now()
 	jti, _ := services.GenerateSecureString(16)
 	expiresIn := now.Add(time.Hour * 1).Unix()
@@ -108,17 +120,15 @@ func (this *AuthController) Login(c *gin.Context) {
 	})
 	tokenString, err := token.SignedString(config.Get[*rsa.PrivateKey]("app.signing_key"))
 	if err != nil {
-		log.Default().Printf("failed to sign token: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
-		return
+		return nil, err
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": gin.H{
+	return gin.H{
 		"user":       user,
 		"token":      tokenString,
 		"expires_in": expiresIn,
 		"token_type": "Bearer",
-	}})
+	}, nil
 }
 
 func (this *AuthController) Me(c *gin.Context) {

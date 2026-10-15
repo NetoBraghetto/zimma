@@ -15,6 +15,7 @@ func RegisterApiRoutes(router *gin.Engine) {
 	tagController := controllers.NewTagController()
 	homeController := controllers.NewHomeController()
 	importController := controllers.NewImportController()
+	oauthController := controllers.NewOAuthController()
 
 	authenticatedGroup := router.Group("/")
 	authenticatedGroup.Use(middlewares.AuthMiddleware())
@@ -33,12 +34,18 @@ func RegisterApiRoutes(router *gin.Engine) {
 	authenticatedGroup.POST("/import/preview", importController.Preview)
 	authenticatedGroup.POST("/import", importController.Store)
 	authenticatedGroup.GET("/me", authController.Me)
+	authenticatedGroup.GET("/me/social-accounts", oauthController.ListSocialAccounts)
+	authenticatedGroup.DELETE("/me/social-accounts/:provider", oauthController.UnlinkSocialAccount)
+	authenticatedGroup.POST("/auth/oauth/:provider/link", oauthController.Link)
 
 	// router.GET("/", (&controllers.HomeController{}).List)
 	router.POST("/auth/register", authController.Register)
 	router.POST("/auth/login", authController.Login)
 	router.POST("/auth/password-recovery", authController.PasswordRecovery)
 	router.POST("/auth/password-reset", authController.PasswordReset)
+	router.POST("/auth/oauth/:provider/authorize", oauthController.Authorize)
+	router.GET("/auth/oauth/:provider/callback", oauthController.Callback)
+	router.POST("/auth/oauth/exchange", oauthController.Exchange)
 
 	router.GET("/up", func(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNoContent)

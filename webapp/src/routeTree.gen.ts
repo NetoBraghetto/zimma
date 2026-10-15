@@ -18,6 +18,7 @@ import { Route as AutenticacaoCadastreSeRouteImport } from './routes/autenticaca
 import { Route as AutenticacaoEsqueciMinhaSenhaRouteImport } from './routes/autenticacao/esqueci-minha-senha'
 import { Route as AutenticacaoLoginRouteImport } from './routes/autenticacao/login'
 import { Route as AutenticacaoResetSenhaRouteImport } from './routes/autenticacao/reset-senha'
+import { Route as OauthCallbackRouteImport } from './routes/oauth/callback'
 import { Route as ProtectedDespesasIndexRouteImport } from './routes/_protected/despesas/index'
 import { Route as ProtectedDespesasNovaRouteImport } from './routes/_protected/despesas/nova'
 import { Route as ProtectedReceitasIndexRouteImport } from './routes/_protected/receitas/index'
@@ -72,6 +73,11 @@ const AutenticacaoResetSenhaRoute = AutenticacaoResetSenhaRouteImport.update({
   id: '/reset-senha',
   path: '/reset-senha',
   getParentRoute: () => AutenticacaoRouteRoute,
+} as any)
+const OauthCallbackRoute = OauthCallbackRouteImport.update({
+  id: '/oauth/callback',
+  path: '/oauth/callback',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProtectedDespesasIndexRoute = ProtectedDespesasIndexRouteImport.update({
   id: '/despesas/',
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/autenticacao/esqueci-minha-senha': typeof AutenticacaoEsqueciMinhaSenhaRoute
   '/autenticacao/login': typeof AutenticacaoLoginRoute
   '/autenticacao/reset-senha': typeof AutenticacaoResetSenhaRoute
+  '/oauth/callback': typeof OauthCallbackRoute
   '/despesas/nova': typeof ProtectedDespesasNovaRoute
   '/receitas/nova': typeof ProtectedReceitasNovaRoute
   '/tags/nova': typeof ProtectedTagsNovaRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/autenticacao/esqueci-minha-senha': typeof AutenticacaoEsqueciMinhaSenhaRoute
   '/autenticacao/login': typeof AutenticacaoLoginRoute
   '/autenticacao/reset-senha': typeof AutenticacaoResetSenhaRoute
+  '/oauth/callback': typeof OauthCallbackRoute
   '/': typeof ProtectedIndexRoute
   '/despesas/nova': typeof ProtectedDespesasNovaRoute
   '/receitas/nova': typeof ProtectedReceitasNovaRoute
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/autenticacao/esqueci-minha-senha': typeof AutenticacaoEsqueciMinhaSenhaRoute
   '/autenticacao/login': typeof AutenticacaoLoginRoute
   '/autenticacao/reset-senha': typeof AutenticacaoResetSenhaRoute
+  '/oauth/callback': typeof OauthCallbackRoute
   '/_protected/': typeof ProtectedIndexRoute
   '/_protected/despesas/nova': typeof ProtectedDespesasNovaRoute
   '/_protected/receitas/nova': typeof ProtectedReceitasNovaRoute
@@ -192,6 +201,7 @@ export interface FileRouteTypes {
     | '/autenticacao/esqueci-minha-senha'
     | '/autenticacao/login'
     | '/autenticacao/reset-senha'
+    | '/oauth/callback'
     | '/despesas/nova'
     | '/receitas/nova'
     | '/tags/nova'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/autenticacao/esqueci-minha-senha'
     | '/autenticacao/login'
     | '/autenticacao/reset-senha'
+    | '/oauth/callback'
     | '/'
     | '/despesas/nova'
     | '/receitas/nova'
@@ -230,6 +241,7 @@ export interface FileRouteTypes {
     | '/autenticacao/esqueci-minha-senha'
     | '/autenticacao/login'
     | '/autenticacao/reset-senha'
+    | '/oauth/callback'
     | '/_protected/'
     | '/_protected/despesas/nova'
     | '/_protected/receitas/nova'
@@ -245,6 +257,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   ProtectedRouteRoute: typeof ProtectedRouteRouteWithChildren
   AutenticacaoRouteRoute: typeof AutenticacaoRouteRouteWithChildren
+  OauthCallbackRoute: typeof OauthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -311,6 +324,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/autenticacao/reset-senha'
       preLoaderRoute: typeof AutenticacaoResetSenhaRouteImport
       parentRoute: typeof AutenticacaoRouteRoute
+    }
+    '/oauth/callback': {
+      id: '/oauth/callback'
+      path: '/oauth/callback'
+      fullPath: '/oauth/callback'
+      preLoaderRoute: typeof OauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_protected/despesas/': {
       id: '/_protected/despesas/'
@@ -434,6 +454,7 @@ const AutenticacaoRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   ProtectedRouteRoute: ProtectedRouteRouteWithChildren,
   AutenticacaoRouteRoute: AutenticacaoRouteRouteWithChildren,
+  OauthCallbackRoute: OauthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

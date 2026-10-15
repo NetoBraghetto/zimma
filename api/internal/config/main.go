@@ -28,10 +28,16 @@ func Load() {
 		appURL = "http://" + os.Getenv("APP_DOMAIN")
 	}
 
+	apiURL := os.Getenv("API_URL")
+	if apiURL == "" {
+		apiURL = "http://api." + os.Getenv("APP_DOMAIN")
+	}
+
 	configs = map[string]any{
 		"app": map[string]any{
 			"name":          os.Getenv("APP_NAME"),
 			"url":           strings.TrimRight(appURL, "/"),
+			"api_url":       strings.TrimRight(apiURL, "/"),
 			"env":           os.Getenv("APP_ENV"),
 			"debug":         os.Getenv("APP_DEBUG") == "true",
 			"signing_key":   signKey,
@@ -51,6 +57,16 @@ func Load() {
 			"username": os.Getenv("MAIL_USERNAME"),
 			"password": os.Getenv("MAIL_PASSWORD"),
 			"from":     os.Getenv("MAIL_FROM_ADDRESS"),
+		},
+		"oauth": map[string]any{
+			"google": map[string]any{
+				"client_id":     os.Getenv("GOOGLE_CLIENT_ID"),
+				"client_secret": os.Getenv("GOOGLE_CLIENT_SECRET"),
+			},
+			"instagram": map[string]any{
+				"client_id":     os.Getenv("INSTAGRAM_CLIENT_ID"),
+				"client_secret": os.Getenv("INSTAGRAM_CLIENT_SECRET"),
+			},
 		},
 	}
 }
